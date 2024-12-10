@@ -34,10 +34,17 @@ class Epoch():
     reward: Token = float('nan')
     fee_compensation: Token = float('nan')
 
+
+@dataclass
+class Agent():
+    uuid: int
+    commitment_bond: Token
+
 class ModelState(TypedDict):
     l1_blocks_passed: BlocksL1
     delta_l1_blocks: BlocksL1
     epochs: list[Epoch]
+    agents: list[Agent]
 
 class ModelParams(TypedDict):
     label: str
