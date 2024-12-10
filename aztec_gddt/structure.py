@@ -1,7 +1,7 @@
-from prey_predator_model.logic import *
+from aztec_gddt.logic import *
 
 
-PREY_PREDATOR_MODEL_BLOCKS = [
+MODEL_BLOCKS = [
     {
         'label': 'Time Tracking',
         'ignore': False,
@@ -17,5 +17,5 @@ PREY_PREDATOR_MODEL_BLOCKS = [
 ]
 
 
-PREY_PREDATOR_MODEL_BLOCKS = [block for block in PREY_PREDATOR_MODEL_BLOCKS
+MODEL_BLOCKS = [block for block in MODEL_BLOCKS
                               if block.get('ignore', False) is False]
