@@ -38,11 +38,13 @@ MODEL_BLOCKS = [
 
 
 def p_epoch(params: ModelParams, _2, _3, state: ModelState):
+    """
+    Logic for the evolution over the epoch/slot state
+    """
     last_epoch = state['last_epoch']
     epoch = state['current_epoch']
     curr_slot = epoch.slots[-1]
 
-    # Else, evolve block state
     l1_blocks_since_slot_init = state['l1_blocks_passed'] - \
         curr_slot.init_time_in_l1
 
@@ -56,6 +58,7 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
         if l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_PROPOSE:
             curr_slot.has_proposal_on_network = True
     else:
+        # Move on to the next slot or epoch
         t1 = 0.75  # TODO
         t2 = 0.25  # TODO
         t3 = 0.5  # TODO
@@ -63,6 +66,8 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
         i_slot = len(epoch.slots)
         if len(epoch.slots) < params['general'].L2_SLOTS_PER_L2_EPOCH:
             proposer = epoch.proposers[i_slot]
+
+            # NOTE: slot is created here
             new_slot = Slot(state['l1_blocks_passed'],
                             proposer,
                             t1,
@@ -73,9 +78,15 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
             last_epoch = deepcopy(epoch)
 
+            # For each slot in the epoch a sequencer/block proposer is drawn (based on score) from the validator committee
             new_proposers = [str(i) for i in range(0, 50)]  # TODO
+
+
+            # 300 validators are drawn (based on score) to the validator committee from the validator set (i.e. from the set of staked users)
             new_validators = [str(i) for i in range(0, 50)]  # TODO
             proposer = new_proposers[0]
+
+            # NOTE: slot is created here
             new_slot = Slot(state['l1_blocks_passed'],
                             proposer,
                             t1,
@@ -84,6 +95,8 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
             t4 = 5
             t5 = t4 + 1
+
+            # NOTE: epoch is created here
             epoch = Epoch(state['l1_blocks_passed'],
                           new_proposers,
                           new_validators,
