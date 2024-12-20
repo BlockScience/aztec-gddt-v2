@@ -48,7 +48,6 @@ class Slot():
 @dataclass
 class Epoch():
     init_time_in_l1: int
-    proposers: list[AgentUUID]
     validators: list[AgentUUID]
     curr_slots: Slot
     slots: list[Slot]
@@ -63,14 +62,16 @@ class Epoch():
 
 @dataclass
 class Agent():
-    uuid: int
+    uuid: AgentUUID
     commitment_bond: Token
+    score: float
 
 
 class ModelState(TypedDict):
     l1_blocks_passed: BlocksL1
     delta_l1_blocks: BlocksL1
     agents: list[Agent]
+    validator_set: set[AgentUUID]
 
     PROVING_COST_MODIFIER: float
 

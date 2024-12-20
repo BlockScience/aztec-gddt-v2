@@ -65,7 +65,10 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
         i_slot = len(epoch.slots)
         if len(epoch.slots) < params['general'].L2_SLOTS_PER_L2_EPOCH:
-            proposer = epoch.proposers[i_slot]
+
+
+            # For each slot in the epoch a sequencer/block proposer is drawn (based on score) from the validator committee
+            proposer = epoch.validators[i_slot]
 
             # NOTE: slot is created here
             new_slot = Slot(state['l1_blocks_passed'],
@@ -78,13 +81,18 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
             last_epoch = deepcopy(epoch)
 
+            # N validators are drawn (based on score) to the validator committee from the validator set (i.e. from the set of staked users)
+            validator_set = [a for a in state['agents']
+                             if a.commitment_bond >= params['slash'].BOND_SIZE]
+            ordered_validator_set = sorted(validator_set,
+                                           key=lambda x: x.score,
+                                           reverse=True)
+            validator_committee = ordered_validator_set[:
+                                                        params['stake'].VALIDATOR_COMMITTEE_SIZE]
+            validator_committee_ids = [a.uuid for a in validator_committee]
+
             # For each slot in the epoch a sequencer/block proposer is drawn (based on score) from the validator committee
-            new_proposers = [str(i) for i in range(0, 50)]  # TODO
-
-
-            # 300 validators are drawn (based on score) to the validator committee from the validator set (i.e. from the set of staked users)
-            new_validators = [str(i) for i in range(0, 50)]  # TODO
-            proposer = new_proposers[0]
+            proposer = validator_committee_ids[0]
 
             # NOTE: slot is created here
             new_slot = Slot(state['l1_blocks_passed'],
@@ -98,8 +106,7 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
             # NOTE: epoch is created here
             epoch = Epoch(state['l1_blocks_passed'],
-                          new_proposers,
-                          new_validators,
+                          validator_committee_ids,
                           new_slot,
                           [],
                           t4,
