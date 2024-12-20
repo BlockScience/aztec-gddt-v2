@@ -77,7 +77,6 @@ class ModelState(TypedDict):
 
     current_epoch: Epoch
     last_epoch: Epoch
-    old_epochs: list[Epoch]
 
 
 
@@ -90,14 +89,6 @@ class GeneralParams():
     L2_SLOTS_PER_L2_EPOCH: int = 32 # fixed
     L1_SLOTS_PER_L2_SLOT: int = 3  # fixed
 
-    
-
-@dataclass
-class RewardParams():
-    BLOCK_REWARD_VOLATILITY: float # sweep
-    BLOCK_REWARD_DRIFT_DECAY_RATE: float # sweep
-    BLOCK_REWARD_SPEED_ADJ: float # sweep
-
 
 @dataclass
 class FeeParams():
@@ -106,6 +97,14 @@ class FeeParams():
     L1_GAS_TO_VERIFY: Gas = 1_000_000 # fixed
     L2_SLOTS_PER_EPOCH: int = 32 # fixed
     L1_GAS_TO_PUBLISH: Gas = 150_000 # fixed
+
+
+@dataclass
+class RewardParams():
+    BLOCK_REWARD_VOLATILITY: float # sweep
+    BLOCK_REWARD_DRIFT_DECAY_RATE: float # sweep
+    BLOCK_REWARD_SPEED_ADJ: float # sweep
+
 
 
 @dataclass
