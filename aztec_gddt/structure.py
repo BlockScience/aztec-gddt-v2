@@ -24,7 +24,6 @@ RAW_MODEL_BLOCKS = [
         'variables': {
             'current_epoch': replace_suf,
             'last_epoch': replace_suf
-
         }
     }
 ]

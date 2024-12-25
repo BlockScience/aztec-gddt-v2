@@ -10,7 +10,7 @@ def test_run() -> pd.DataFrame:
     """
     from aztec_gddt.default_params import DEFAULT_INITIAL_STATE, DEFAULT_PARAMS
     # The number of timesteps for each simulation to run
-    N_TIMESTEPS = 50
+    N_TIMESTEPS = 300
 
     # The number of monte carlo runs per set of parameters tested
     N_samples = 1

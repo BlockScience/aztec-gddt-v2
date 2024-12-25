@@ -1,5 +1,5 @@
 from aztec_gddt.types import *
-from copy import deepcopy
+from copy import deepcopy, copy
 
 from aztec_gddt.types import Slot
 
@@ -20,7 +20,7 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
     Logic for the evolution over the epoch/slot state
     """
     last_epoch = state['last_epoch']
-    epoch = state['current_epoch']
+    epoch = deepcopy(state['current_epoch'])
 
     # Interpret zero slots as a signal for creating a new Epoch
     if len(epoch.slots) == 0:
@@ -42,13 +42,24 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
         if l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_PROPOSE:
             curr_slot.has_proposal_on_network = True
     else:
+
+
+        l1_blocks_since_epoch_init = state['l1_blocks_passed'] - epoch.init_time_in_l1
+            
+        epoch_still_ongoing = (l1_blocks_since_epoch_init <= 
+                                     params['general'].L2_SLOTS_PER_L2_EPOCH 
+                                     * params['general'].L1_SLOTS_PER_L2_SLOT)
+        
+        epoch_still_has_slots = len(epoch.slots) < params['general'].L2_SLOTS_PER_L2_EPOCH
+
+
         # Move on to the next slot or epoch
         t1 = 0.75  # TODO
         t2 = 0.25  # TODO
         t3 = 0.5  # TODO
 
         i_slot = len(epoch.slots)
-        if len(epoch.slots) < params['general'].L2_SLOTS_PER_L2_EPOCH:
+        if epoch_still_has_slots and epoch_still_ongoing:
 
             # For each slot in the epoch a sequencer/block proposer is drawn (based on score) from the validator committee
             proposer = epoch.validators[i_slot]
@@ -61,7 +72,6 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
                             t1 + t2 + t3)
             
             epoch.slots.append(new_slot)
-            
         else:
             last_epoch = deepcopy(epoch)
 

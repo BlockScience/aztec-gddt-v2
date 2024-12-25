@@ -58,7 +58,6 @@ def main(process: bool,
          upload_to_cloud: bool,
          no_parallelize: bool) -> None:
     
-    CLOUD_BUCKET_NAME = 'aztec-gddt'
 
     if upload_to_cloud:
         session = boto3.Session()
@@ -67,13 +66,6 @@ def main(process: bool,
     logger.setLevel(log_levels[log_level])
 
     timestamp = datetime.now().strftime("%Y-%m-%dT%H%M%SZ%z")
-    prefix = 'psuu_run'
-    folder_path = "data/simulations/"
-    folder = f'{prefix}_{timestamp}'
-
-    timestep_tensor_prefix = f"timestep_tensor"
-    output_path: Path = Path(folder_path) / folder
-    output_path.mkdir(parents=True, exist_ok=True)
 
     test_run()
 
