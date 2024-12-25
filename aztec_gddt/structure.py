@@ -25,6 +25,15 @@ RAW_MODEL_BLOCKS = [
             'current_epoch': replace_suf,
             'last_epoch': replace_suf
         }
+    },
+    {
+        'label': 'Prover Quotes',
+        'ignore': False,
+        'policies': {
+        },
+        'variables': {
+            'last_epoch': s_last_epoch_quotes
+        }
     }
 ]
 

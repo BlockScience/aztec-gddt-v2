@@ -1,6 +1,6 @@
 from aztec_gddt.types import *
 from copy import deepcopy, copy
-
+from random import sample, random
 from aztec_gddt.types import Slot
 
 def p_evolve_time(params: ModelParams, _2, _3, _4):
@@ -74,6 +74,9 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             epoch.slots.append(new_slot)
         else:
             last_epoch = deepcopy(epoch)
+            last_epoch.pending_time_in_l1 = state['l1_blocks_passed']
+            if last_epoch.finalized == False:
+                last_epoch.reorged = True
 
             # N validators are drawn (based on score) to the validator committee from the validator set (i.e. from the set of staked users)
             validator_set = [a for a in state['agents']
@@ -118,6 +121,46 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
     # 2. If time is over or slot is pending-finish, create new block
 
 
+
+
+def s_last_epoch_quotes(params: ModelParams, _2, _3,
+                  state: ModelState, _5) -> tuple:
+    epoch = state['last_epoch']
+
+
+    if epoch.finalized or epoch.reorged:
+        pass
+    else:
+        epoch = deepcopy(state['last_epoch'])
+        t = state['l1_blocks_passed'] - epoch.pending_time_in_l1
+
+        if epoch.accepted_prover != None:
+            if t > epoch.time_until_E_EPOCH_FINISH:
+                epoch.finalized = True
+            else:
+                # The terminal condition is handled on p_epoch
+                pass
+        else:
+            if t < epoch.time_until_E_EPOCH_QUOTE_ACCEPT:
+                # Generate quotes
+                # XXX
+                # Assume that each timestep
+                # a random agent proposes a random percentage of his commit bond
+                # up until 20%
+                agent = sample(population=state['agents'], k=1)[0]
+                quote = agent.commitment_bond * random() * 0.2
+                epoch.prover_quotes[agent.uuid] = quote
+            else:
+                if len(epoch.prover_quotes) > 0:
+                    # Select highest scoring quote
+                    prover = min(epoch.prover_quotes, key=epoch.prover_quotes.get) # type: ignore
+                    epoch.accepted_prover = prover
+                    epoch.accepted_prover_quote = epoch.prover_quotes[prover]
+                else:
+                    # Reorg
+                    epoch.reorged = True
+
+    return ('last_epoch', epoch)
 
 
 

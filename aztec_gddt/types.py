@@ -52,11 +52,14 @@ class Epoch():
     slots: list[Slot]
     time_until_E_EPOCH_QUOTE_ACCEPT: BlocksL1
     time_until_E_EPOCH_FINISH: BlocksL1
+    pending_time_in_l1: int = -999# Time in L1 when Epoch has entered Pending Chain
     prover_quotes: dict[AgentUUID, Token] = field(default_factory=dict)
     accepted_prover: Optional[AgentUUID] = None
     accepted_prover_quote: Token = float('nan')
     reward: Token = float('nan')
     fee_compensation: Token = float('nan')
+    finalized: bool = False
+    reorged: bool = False
 
 
 @dataclass
@@ -85,8 +88,9 @@ class GeneralParams():
     MAXIMUM_MANA_PER_BLOCK: Mana # sweep 20m or 40m
     TST_TOTAL_SUPPLY: Token # Assigned
     LAUNCH_VALUATION: Fiat # Assigned
-    L2_SLOTS_PER_L2_EPOCH: int = 32 # fixed
-    L1_SLOTS_PER_L2_SLOT: int = 3  # fixed
+    L2_SLOTS_PER_L2_EPOCH: BlocksL2 = 32 # fixed
+    L1_SLOTS_PER_L2_SLOT: BlocksL1 = 3  # fixed
+    PROVER_SEARCH_PERIOD: BlocksL2 = 13 # fixed
 
 
 @dataclass
