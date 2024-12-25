@@ -1,5 +1,5 @@
 from typing import Annotated, TypedDict, Union, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 Days = Annotated[float, 'days']  # Number of days
@@ -49,11 +49,10 @@ class Slot():
 class Epoch():
     init_time_in_l1: int
     validators: list[AgentUUID]
-    curr_slots: Slot
     slots: list[Slot]
     time_until_E_EPOCH_QUOTE_ACCEPT: BlocksL1
     time_until_E_EPOCH_FINISH: BlocksL1
-    prover_quotes: dict[AgentUUID, Token] = dict()
+    prover_quotes: dict[AgentUUID, Token] = field(default_factory=dict)
     accepted_prover: Optional[AgentUUID] = None
     accepted_prover_quote: Token = float('nan')
     reward: Token = float('nan')

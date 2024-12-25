@@ -1,5 +1,4 @@
-cadCAD-legacy-devel
-cadCAD-tools
+cadCAD
 millify
 numpy
 pandas
@@ -10,3 +9,4 @@ matplotlib
 numpy
 joblib
 dataclasses_json
+click

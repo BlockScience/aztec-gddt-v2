@@ -1,16 +1,18 @@
 from aztec_gddt.types import *
 from copy import deepcopy
 
-def p_evolve_time(params: ModelParams, _2, _3, _4):
-    return {'delta_days': params['timestep_in_l1_blocks']}
+from aztec_gddt.types import Slot
 
-def s_days_passed(_1, _2, _3,
+def p_evolve_time(params: ModelParams, _2, _3, _4):
+    return {'delta_l1_blocks': params['timestep_in_l1_blocks']}
+
+def s_blocks_passed(_1, _2, _3,
                   state: ModelState,
                   signal):
-    return ('days_passed', state['l1_blocks_passed'] + signal['delta_l1_blocks'])
+    return ('l1_blocks_passed', state['l1_blocks_passed'] + signal['delta_l1_blocks'])
 
-def s_delta_days(_1, _2, _3, _4, signal):
-    return ('delta_days', signal['delta_l1_blocks'])
+def s_delta_blocks(_1, _2, _3, _4, signal):
+    return ('delta_l1_blocks', signal['delta_l1_blocks'])
 
 
 def p_epoch(params: ModelParams, _2, _3, state: ModelState):
@@ -19,8 +21,14 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
     """
     last_epoch = state['last_epoch']
     epoch = state['current_epoch']
-    curr_slot = epoch.slots[-1]
 
+    # Interpret zero slots as a signal for creating a new Epoch
+    if len(epoch.slots) == 0:
+        pass
+
+    else:
+        curr_slot = epoch.slots[-1]
+        
     l1_blocks_since_slot_init = state['l1_blocks_passed'] - \
         curr_slot.init_time_in_l1
 
@@ -42,7 +50,6 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
         i_slot = len(epoch.slots)
         if len(epoch.slots) < params['general'].L2_SLOTS_PER_L2_EPOCH:
 
-
             # For each slot in the epoch a sequencer/block proposer is drawn (based on score) from the validator committee
             proposer = epoch.validators[i_slot]
 
@@ -52,9 +59,10 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
                             t1,
                             t1 + t2,
                             t1 + t2 + t3)
+            
             epoch.slots.append(new_slot)
+            
         else:
-
             last_epoch = deepcopy(epoch)
 
             # N validators are drawn (based on score) to the validator committee from the validator set (i.e. from the set of staked users)
@@ -81,12 +89,11 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             t5 = t4 + 1
 
             # NOTE: epoch is created here
-            epoch = Epoch(state['l1_blocks_passed'],
-                          validator_committee_ids,
-                          new_slot,
-                          [],
-                          t4,
-                          t5)
+            epoch = Epoch(init_time_in_l1=state['l1_blocks_passed'],
+                          validators=validator_committee_ids,
+                          slots=[new_slot],
+                          time_until_E_EPOCH_QUOTE_ACCEPT=t4,
+                          time_until_E_EPOCH_FINISH=t5)
 
     return {'current_epoch': epoch,
             'last_epoch': last_epoch}

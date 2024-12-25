@@ -12,7 +12,11 @@ for i in range(N_AGENTS):
     DEFAULT_INITIAL_AGENTS.append(a)
 
 
-invalid_epoch = Epoch(-999, [], Slot(-999, '', -999, -999, -999), [], -999, -999)
+invalid_epoch = Epoch(init_time_in_l1=-999, 
+                      validators=[], 
+                      slots=[Slot(-999, '', -999, -999, -999)], 
+                      time_until_E_EPOCH_QUOTE_ACCEPT=-999, 
+                      time_until_E_EPOCH_FINISH=-999)
 
 DEFAULT_INITIAL_EPOCH = invalid_epoch
 DEFAULT_LAST_EPOCH = invalid_epoch

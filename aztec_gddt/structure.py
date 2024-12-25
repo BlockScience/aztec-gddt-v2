@@ -10,8 +10,8 @@ RAW_MODEL_BLOCKS = [
             'evolve_time': p_evolve_time
         },
         'variables': {
-            'days_passed': s_days_passed,
-            'delta_days': s_delta_days
+            'l1_blocks_passed': s_blocks_passed,
+            'delta_l1_blocks': s_delta_blocks
         }
     },
     {
