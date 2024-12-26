@@ -2,6 +2,7 @@ from aztec_gddt.types import *
 from copy import deepcopy, copy
 from random import sample, random
 from aztec_gddt.types import Slot
+from aztec_gddt.mechanism_functions import block_reward
 
 def p_evolve_time(params: ModelParams, _2, _3, _4):
     return {'delta_l1_blocks': params['timestep_in_l1_blocks']}
@@ -174,12 +175,6 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
             'last_reward': last_reward,
             'last_reward_time_in_l1': last_reward_time}
 
-
-
-def block_reward(time_in_l1_blocks: BlocksL1,
-                last_reward_time_in_l1_blocks: BlocksL1,
-                last_reward: Token) -> Token:
-    return random()
 
 
 def transaction_fee(fee_params: FeeParams) -> Wei:
