@@ -53,6 +53,7 @@ class Epoch():
     time_until_E_EPOCH_QUOTE_ACCEPT: BlocksL1
     time_until_E_EPOCH_FINISH: BlocksL1
     pending_time_in_l1: int = -999# Time in L1 when Epoch has entered Pending Chain
+    finalized_time_in_l1: int = -999
     prover_quotes: dict[AgentUUID, Token] = field(default_factory=dict)
     accepted_prover: Optional[AgentUUID] = None
     accepted_prover_quote: Token = float('nan')
@@ -79,6 +80,9 @@ class ModelState(TypedDict):
 
     current_epoch: Epoch
     last_epoch: Epoch
+
+    last_reward: Token
+    last_reward_time_in_l1: BlocksL1
 
 
 

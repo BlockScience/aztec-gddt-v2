@@ -121,10 +121,11 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
 
 
-def s_last_epoch_quotes(params: ModelParams, _2, _3,
-                  state: ModelState, _5) -> tuple:
+def p_pending_epoch_proof(params: ModelParams, _2, _3,
+                  state: ModelState) -> dict:
     epoch = state['last_epoch']
-
+    last_reward_time = state['last_reward_time_in_l1']
+    last_reward = state['last_reward']
 
     if epoch.finalized or epoch.reorged:
         pass
@@ -134,9 +135,18 @@ def s_last_epoch_quotes(params: ModelParams, _2, _3,
 
         if epoch.accepted_prover != None:
             if t > epoch.time_until_E_EPOCH_FINISH:
+                # Finalize epoch and perform rewards
                 epoch.finalized = True
+                epoch.finalized_time_in_l1 = state['l1_blocks_passed']
+
+
+                last_reward = block_reward(state['l1_blocks_passed'],
+                                      last_reward_time,
+                                      last_reward)
+                last_reward_time = epoch.finalized_time_in_l1
             else:
                 if t > params['general'].L2_SLOTS_PER_L2_EPOCH * params['general'].L1_SLOTS_PER_L2_SLOT:
+                    # Reorg epoch and slash prover
                     epoch.reorged = True
                 else:
                     pass
@@ -160,7 +170,8 @@ def s_last_epoch_quotes(params: ModelParams, _2, _3,
                     # Reorg
                     epoch.reorged = True
 
-    return ('last_epoch', epoch)
+    return {'last_epoch': epoch,
+            'last_reward_time_in_l1': last_reward_time}
 
 
 

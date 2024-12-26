@@ -27,12 +27,15 @@ RAW_MODEL_BLOCKS = [
         }
     },
     {
-        'label': 'Prover Quotes',
+        'label': 'Epoch Proving',
         'ignore': False,
         'policies': {
+            'epoch_proving': p_pending_epoch_proof
         },
         'variables': {
-            'last_epoch': s_last_epoch_quotes
+            'last_epoch': replace_suf,
+            'last_reward_time_in_l1': replace_suf,
+            'last_reward': replace_suf
         }
     }
 ]

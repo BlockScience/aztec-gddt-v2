@@ -30,7 +30,9 @@ DEFAULT_INITIAL_STATE = ModelState(
     validator_set=set(),
     PROVING_COST_MODIFIER=0.0,
     current_epoch=DEFAULT_INITIAL_EPOCH,
-    last_epoch=DEFAULT_LAST_EPOCH
+    last_epoch=DEFAULT_LAST_EPOCH,
+    last_reward_time_in_l1=-999,
+    last_reward=0.0
 )
 
 general_params = GeneralParams(OVERHEAD_MANA_PER_TX=10_000,
