@@ -3,7 +3,7 @@ from copy import deepcopy, copy
 from random import sample, random
 from aztec_gddt.types import Slot
 from aztec_gddt.mechanism_functions import block_reward
-
+import math
 
 def p_evolve_time(params: ModelParams, _2, _3, _4):
     return {'delta_l1_blocks': params['timestep_in_l1_blocks']}
@@ -234,16 +234,22 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
             }
 
 
-def transaction_fee(fee_params: FeeParams) -> Wei:
 
-    # L1_gas_per_L2_block: Gas = L1_gas_per_block_proposed + blobs_per_block * POINT_EVALUATION_PRECOMPILE_GAS
-    # wei_per_L2_block: Wei = L1_gas_per_L2_block * wei_per_L1_gas
+def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, signal) -> tuple:
 
-    # wei_for_DA_per_L2_block: Wei = blobs_per_block * L1_gas_per_blob * wei_per_L1_blob_gas
+    upper_multiplier = state['congestion_multiplier'] * (1 + params['fee'].MAX_RELATIVE_CHANGE_CONGESTION)
 
-    # L1_cost_per_mana = L1_cost_per_L2_cost / fee_params.TARGET_MANA_PER_BLOCK
+    lower_multiplier = state['congestion_multiplier'] * (1 - params['fee'].MAX_RELATIVE_CHANGE_CONGESTION)
 
-    return 0
+    multiplier = params['fee'].MINIMUM_MULTIPLIER_CONGESTION * math.exp(state['excess_mana'] / params['fee'].UPDATE_FRACTION_CONGESTION)
+
+    if multiplier > upper_multiplier:
+        multiplier = upper_multiplier
+    elif multiplier < lower_multiplier:
+        multiplier = lower_multiplier
+
+    return ('congestion_multiplier', multiplier)
+
 
 
 def replace_suf(variable: str, default_value=0.0):
@@ -275,3 +281,4 @@ def add_suf(variable: str, default_value=0.0):
         variable,
         signal.get(variable, default_value) + state[variable],
     )
+

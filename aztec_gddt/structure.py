@@ -15,6 +15,14 @@ RAW_MODEL_BLOCKS = [
         }
     },
     {
+        'label': 'Oracles',
+        'ignore': False,
+        'policies': {
+
+        },
+        'congestion_multiplier': s_congestion_multiplier
+    },
+    {
         'label': 'Epoch/Slot evolution',
         'ignore': False,
         'policies': {
