@@ -75,8 +75,6 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
         else:
             last_epoch = deepcopy(epoch)
             last_epoch.pending_time_in_l1 = state['l1_blocks_passed']
-            if last_epoch.finalized == False:
-                last_epoch.reorged = True
 
             # N validators are drawn (based on score) to the validator committee from the validator set (i.e. from the set of staked users)
             validator_set = [a for a in state['agents']
@@ -138,8 +136,10 @@ def s_last_epoch_quotes(params: ModelParams, _2, _3,
             if t > epoch.time_until_E_EPOCH_FINISH:
                 epoch.finalized = True
             else:
-                # The terminal condition is handled on p_epoch
-                pass
+                if t > params['general'].L2_SLOTS_PER_L2_EPOCH * params['general'].L1_SLOTS_PER_L2_SLOT:
+                    epoch.reorged = True
+                else:
+                    pass
         else:
             if t < epoch.time_until_E_EPOCH_QUOTE_ACCEPT:
                 # Generate quotes
