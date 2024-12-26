@@ -25,11 +25,12 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
     """
     last_epoch = state['last_epoch']
     epoch = deepcopy(state['current_epoch'])
+    dropped_tx = 0
+    excl_tx = 0
 
     # Interpret zero slots as a signal for creating a new Epoch
     if len(epoch.slots) == 0:
         pass
-
     else:
         curr_slot = epoch.slots[-1]
 
@@ -37,6 +38,8 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
         curr_slot.init_time_in_l1
 
     if l1_blocks_since_slot_init < params['general'].L1_SLOTS_PER_L2_SLOT:
+        # If there's still slot time,
+        # check whatever events have progressed
         if l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_SENT:
             curr_slot.has_block_header_on_l1 = True
 
@@ -52,7 +55,9 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             curr_slot.tx_total_mana = curr_slot.tx_count * \
                 params['general'].OVERHEAD_MANA_PER_TX
     else:
-
+        # If slot time has expired
+        # then check whatever there's still
+        # space-time on the epoch
         l1_blocks_since_epoch_init = state['l1_blocks_passed'] - \
             epoch.init_time_in_l1
 
@@ -70,6 +75,8 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
         i_slot = len(epoch.slots)
         if epoch_still_has_slots and epoch_still_ongoing:
+            # If there's space-time on the epoch
+            # create a new slot
 
             # For each slot in the epoch a sequencer/block proposer is drawn (based on score) from the validator committee
             proposer = epoch.validators[i_slot]
@@ -83,6 +90,8 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
             epoch.slots.append(new_slot)
         else:
+            # If there isn't space-time on the epoch
+            # create new epoch and slot
             last_epoch = deepcopy(epoch)
             last_epoch.pending_time_in_l1 = state['l1_blocks_passed']
 
@@ -117,16 +126,9 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
                           time_until_E_EPOCH_FINISH=t5)
 
     return {'current_epoch': epoch,
-            'last_epoch': last_epoch}
-
-    # Check if all blocks are done
-
-    if curr_slot.is_valid_proposal:
-        epoch.slots.append(new_slot)
-        # TODO: create new slot
-
-    # 1. Update slot state based on BlockEvolutionState
-    # 2. If time is over or slot is pending-finish, create new block
+            'last_epoch': last_epoch,
+            'cumm_dropped_tx': dropped_tx,
+            'cumm_excl_tx': excl_tx}
 
 
 def p_pending_epoch_proof(params: ModelParams, _2, _3,
@@ -135,6 +137,15 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
     last_reward_time = state['last_reward_time_in_l1']
     last_reward = state['last_reward']
 
+    delta_empty_blocks = 0
+    delta_unproven_epochs = 0
+    delta_resolved_epochs = 0
+    delta_finalized_epochs = 0
+    delta_cumm_mana = 0
+    delta_finalized_blocks = 0
+
+
+    # Ignore resolved epochs (eg. finalized or reorged)
     if epoch.finalized or epoch.reorged:
         pass
     else:
@@ -142,7 +153,9 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
         t = state['l1_blocks_passed'] - epoch.pending_time_in_l1
 
         if epoch.accepted_prover != None:
+            # If there's an accepted prover, then
             if t > epoch.time_until_E_EPOCH_FINISH:
+                # If prover has finalized, then
                 # Finalize epoch and perform rewards
                 epoch.finalized = True
                 epoch.finalized_time_in_l1 = state['l1_blocks_passed']
@@ -155,37 +168,70 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     drift_decay_rate=params['reward'].BLOCK_REWARD_DRIFT_DECAY_RATE,
                     volatility_coefficient=params['reward'].BLOCK_REWARD_VOLATILITY,
                     volatility_decay_rate=params['reward'].BLOCK_REWARD_DRIFT_DECAY_RATE)
+                
                 last_reward_time = epoch.finalized_time_in_l1
+
+                delta_resolved_epochs += 1
+                delta_finalized_epochs +=1
+                delta_cumm_mana += sum(s.tx_total_mana for s in epoch.slots)
+                delta_finalized_blocks += len(epoch.slots)
             else:
+                # If prover didn't finalize, then
                 if t > params['general'].L2_SLOTS_PER_L2_EPOCH * params['general'].L1_SLOTS_PER_L2_SLOT:
-                    # Reorg epoch and slash prover
+                    # Reorg epoch and slash prover if time is over
                     epoch.reorged = True
+
+                    # TODO Maybe we need to check slots individually
+                    delta_empty_blocks += len(epoch.slots)
+                    delta_unproven_epochs += 1
+                    delta_resolved_epochs += 1
+
                 else:
+                    # Or just wait
                     pass
         else:
-            if t < epoch.time_until_E_EPOCH_QUOTE_ACCEPT:
-                # Generate quotes
-                # XXX
-                # Assume that each timestep
-                # a random agent proposes a random percentage of his commit bond
-                # up until 20%
-                agent = sample(population=state['agents'], k=1)[0]
-                quote = agent.commitment_bond * random() * 0.2
-                epoch.prover_quotes[agent.uuid] = quote
-            else:
-                if len(epoch.prover_quotes) > 0:
-                    # Select highest scoring quote
-                    prover = min(epoch.prover_quotes,
-                                 key=epoch.prover_quotes.get)  # type: ignore
-                    epoch.accepted_prover = prover
-                    epoch.accepted_prover_quote = epoch.prover_quotes[prover]
+            # If there isn't an accepted prover, then
+            if t < params['general'].PROVER_SEARCH_PERIOD:
+                if t < epoch.time_until_E_EPOCH_QUOTE_ACCEPT:
+                    # Create quotes while no one is accepted
+
+                    # XXX
+                    # Assume that each timestep
+                    # a random agent proposes a random percentage of his commit bond
+                    # up until 20%
+                    # FIXME
+                    agent = sample(population=state['agents'], k=1)[0]
+                    quote = agent.commitment_bond * random() * 0.2
+                    epoch.prover_quotes[agent.uuid] = quote
                 else:
-                    # Reorg
-                    epoch.reorged = True
+                    # If time for acceptance is over, then
+                    if len(epoch.prover_quotes) > 0:
+                        # Select highest scoring admissible quote
+                        prover = min(epoch.prover_quotes,
+                                    key=epoch.prover_quotes.get)  # type: ignore
+                        epoch.accepted_prover = prover
+                        epoch.accepted_prover_quote = epoch.prover_quotes[prover]
+                    else:
+                        # Else, keep waiting
+                        pass
+            else:
+                # Or if time for accepting a prover is over, reorg
+                epoch.reorged = True
+                # TODO Maybe we need to check slots individually
+                delta_empty_blocks += len(epoch.slots)
+                delta_unproven_epochs += 1
+                delta_resolved_epochs += 1
 
     return {'last_epoch': epoch,
             'last_reward': last_reward,
-            'last_reward_time_in_l1': last_reward_time}
+            'last_reward_time_in_l1': last_reward_time,
+            'cumm_empty_blocks': delta_empty_blocks,
+            'cumm_unproven_epochs': delta_unproven_epochs,
+            'cumm_resolved_epochs': delta_resolved_epochs,
+            'cumm_finalized_epochs': delta_finalized_epochs,
+            'cumm_mana_used_on_finalized_blocks': delta_cumm_mana,
+            'cumm_finalized_blocks': delta_finalized_blocks,
+            }
 
 
 def transaction_fee(fee_params: FeeParams) -> Wei:

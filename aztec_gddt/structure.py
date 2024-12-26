@@ -23,7 +23,9 @@ RAW_MODEL_BLOCKS = [
         },
         'variables': {
             'current_epoch': replace_suf,
-            'last_epoch': replace_suf
+            'last_epoch': replace_suf,
+            'cumm_dropped_tx': add_suf,
+            'cumm_excl_tx': add_suf,
         }
     },
     {
@@ -35,7 +37,13 @@ RAW_MODEL_BLOCKS = [
         'variables': {
             'last_epoch': replace_suf,
             'last_reward_time_in_l1': replace_suf,
-            'last_reward': replace_suf
+            'last_reward': replace_suf,
+            'cumm_empty_blocks': add_suf,
+            'cumm_unproven_epochs': add_suf,
+            'cumm_resolved_epochs': add_suf,
+            'cumm_finalized_epochs': add_suf,
+            'cumm_mana_used_on_finalized_blocks': add_suf,
+            'cumm_finalized_blocks': add_suf
         }
     }
 ]

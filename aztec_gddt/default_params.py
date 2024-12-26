@@ -34,7 +34,19 @@ DEFAULT_INITIAL_STATE = ModelState(
     last_reward_time_in_l1=0, # XXX
     last_reward=15_000, # XXX
     l1_gas_price=0,
-    l1_blobgas_price=0
+    l1_blobgas_price=0,
+
+    # State Metrics
+    market_price_juice_per_mana=float('nan'),
+    base_fee=float('nan'),
+    cumm_empty_blocks=0,
+    cumm_unproven_epochs=0,
+    cumm_dropped_tx=0,
+    cumm_excl_tx=0,
+    cumm_resolved_epochs=0,
+    cumm_finalized_epochs=0,
+    cumm_mana_used_on_finalized_blocks=0,
+    cumm_finalized_blocks=0
 )
 
 general_params = GeneralParams(OVERHEAD_MANA_PER_TX=10_000,

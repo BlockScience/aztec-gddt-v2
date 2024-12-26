@@ -93,6 +93,18 @@ class ModelState(TypedDict):
     l1_gas_price: WeiPerGas
     l1_blobgas_price: WeiPerGas
 
+    # State Metrics
+    market_price_juice_per_mana: JuicePerMana
+    base_fee: JuicePerMana
+    cumm_empty_blocks: int
+    cumm_unproven_epochs: int
+    cumm_dropped_tx: int
+    cumm_excl_tx: int
+    cumm_resolved_epochs: int
+    cumm_finalized_epochs: int
+    cumm_mana_used_on_finalized_blocks: Mana
+    cumm_finalized_blocks: BlocksL2
+
 
 
 @dataclass
