@@ -99,14 +99,14 @@ def block_reward(
 
 def raw_base_fee(
         # Parameters
-        min_congestion_multiplier: float,
-        congestion_multiplier_update_fraction: Percentage,
         target_mana_per_block: Mana,
         
-        # Market related
+        # Oracle / Contract related
         l1_gas_price: WeiPerGas,
         l1_blobgas_price: WeiPerGas,
         juice_per_wei_price: JuicePerWei,
+        proving_cost_per_mana_in_wei: WeiPerMana,
+        congestion_multiplier: float,
 
         # Tx related
         blobs_per_block: int,
@@ -114,12 +114,7 @@ def raw_base_fee(
         l1_blobgas_per_block: Gas,
     
         # Metrics
-        past_proving_cost_value: WeiPerMana,
-        excess_mana: Mana,
-        
-        # Behavioral
-        proving_cost_change: float,
-        juice_per_wei_change: float,
+        excess_mana: Mana
         ) -> JuicePerMana:
     
     l1_gas_cost_in_wei_per_l2block: Wei = l1_gas_per_block * l1_gas_price
@@ -130,21 +125,11 @@ def raw_base_fee(
 
     l1_cost_per_mana_in_wei: WeiPerMana = l1_cost_in_wei_per_l2block / target_mana_per_block
 
-
-    proving_cost_per_mana_in_wei: WeiPerMana = past_proving_cost_value * proving_cost_change
-
-
-    congestion: float = math.exp(excess_mana / congestion_multiplier_update_fraction)
-    congestion_multiplier: float = min_congestion_multiplier * congestion
-
     wei_per_mana = l1_cost_per_mana_in_wei + proving_cost_per_mana_in_wei
 
-
-
     base_fee_in_wei_per_mana: WeiPerMana = wei_per_mana * congestion_multiplier
-    juice_per_wei: JuicePerWei = juice_per_wei_price * juice_per_wei_change
 
-    base_fee_in_juice_per_mana: JuicePerMana = base_fee_in_wei_per_mana * juice_per_wei
+    base_fee_in_juice_per_mana: JuicePerMana = base_fee_in_wei_per_mana * juice_per_wei_price
 
     return base_fee_in_juice_per_mana
 
@@ -185,29 +170,28 @@ def juice_per_wei_price_fn(minimum_fee_asset_per_wei: JuicePerWei,
 
 def base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
 
-    l1_gas_for_da = params['fee'].BLOBS_PER_BLOCK * params['fee'].L1_GAS_PER_BLOB
+    l1_gas_for_da: Gas = params['fee'].BLOBS_PER_BLOCK * params['fee'].POINT_EVALUATION_PRECOMIPLE_GAS
 
+    
+    l1_gas_per_block: Gas =  params['fee'].L1_GAS_TO_PUBLISH + l1_gas_for_da + int(params['fee'].L1_GAS_TO_VERIFY / params['general'].L2_SLOTS_PER_L2_EPOCH)
+    l1_blobgas_per_block: Gas = params['fee'].L1_BLOBGAS_PER_BLOB * params['fee'].BLOBS_PER_BLOCK
+    juice_per_wei_price = state['oracle_price_juice_per_mana']
+    proving_cost_per_mana_in_wei = state['oracle_proving_cost']
+    congestion_multiplier = state['congestion_multiplier']
 
-    juice_per_wei_price = 0.0 # TODO
-    l1_gas_per_block = params['fee'].L1_GAS_TO_VERIFY + params['fee'].L1_GAS_TO_PUBLISH + l1_gas_for_da
-    l1_blobgas_per_block = 0 # TODO
-    past_proving_cost_value = 0.0 # TODO
-    excess_mana = 0 # TODO
-    proving_cost_change = 0.0 # TODO
-    juice_per_wei_change = 0.0 # TODO
+    excess_mana = state['excess_mana']
 
     return raw_base_fee(
-        min_congestion_multiplier=params['fee'].MINIMUM_MULTIPLIER_CONGESTION,
-        congestion_multiplier_update_fraction=params['fee'].UPDATE_FRACTION_CONGESTION,
         target_mana_per_block=params['fee'].TARGET_MANA_PER_BLOCK,
-        l1_gas_price=state['l1_gas_price'],
-        l1_blobgas_price=state['l1_blobgas_price'],
+
+        l1_gas_price=state['oracle_price_l1_gas'],
+        l1_blobgas_price=state['oracle_price_l1_blobgas'],
         juice_per_wei_price=juice_per_wei_price,
+        proving_cost_per_mana_in_wei=proving_cost_per_mana_in_wei,
+        congestion_multiplier=congestion_multiplier,
+
         blobs_per_block=params['fee'].BLOBS_PER_BLOCK,
         l1_gas_per_block=l1_gas_per_block,
         l1_blobgas_per_block=l1_blobgas_per_block,
-        past_proving_cost_value=past_proving_cost_value,
-        excess_mana=excess_mana,
-        proving_cost_change=proving_cost_change,
-        juice_per_wei_change=juice_per_wei_change
-                 )
+
+        excess_mana=excess_mana)

@@ -87,11 +87,20 @@ class ModelState(TypedDict):
     current_epoch: Epoch
     last_epoch: Epoch
 
+    # Block Reward related values
     last_reward: Token
     last_reward_time_in_l1: BlocksL1
 
-    l1_gas_price: WeiPerGas
-    l1_blobgas_price: WeiPerGas
+    # Market & Oracle Values
+    market_price_l1_juice_per_mana: WeiPerGas # TODO
+    market_price_l1_gas: WeiPerGas # TODO
+    market_price_l1_blobgas: WeiPerGas # TODO
+    oracle_price_juice_per_mana: JuicePerMana # TODO
+    oracle_price_l1_gas: WeiPerGas # TODO
+    oracle_price_l1_blobgas: WeiPerGas # TODO
+    oracle_proving_cost: WeiPerMana # TODO
+    congestion_multiplier: float # TODO
+    excess_mana: Mana # TODO
 
     # State Metrics
     market_price_juice_per_mana: JuicePerMana
@@ -126,7 +135,8 @@ class FeeParams():
     L1_GAS_TO_VERIFY: Gas = 1_000_000 # fixed
     L2_SLOTS_PER_EPOCH: int = 32 # fixed
     L1_GAS_TO_PUBLISH: Gas = 150_000 # fixed
-    L1_GAS_PER_BLOB: Gas = 2 ** 17 # fixed
+    L1_BLOBGAS_PER_BLOB: Gas = int(2 ** 17) # fixed, ~131k
+    POINT_EVALUATION_PRECOMIPLE_GAS: Gas = 50_000
 
     MINIMUM_MULTIPLIER_CONGESTION: float = 1.0 # fixed
     MINIMUM_PROVING_COST: WeiPerMana = 1.0 # fixed

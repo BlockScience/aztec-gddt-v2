@@ -31,10 +31,22 @@ DEFAULT_INITIAL_STATE = ModelState(
     PROVING_COST_MODIFIER=0.0,
     current_epoch=DEFAULT_INITIAL_EPOCH,
     last_epoch=DEFAULT_LAST_EPOCH,
+
+    # Block Reward related values
     last_reward_time_in_l1=0, # XXX
     last_reward=15_000, # XXX
-    l1_gas_price=0,
-    l1_blobgas_price=0,
+
+    # Market & Oracle Values
+    market_price_l1_juice_per_mana = 0, # TODO
+    market_price_l1_gas = 0, # TODO
+    market_price_l1_blobgas = 0, # TODO
+    oracle_price_juice_per_mana = 0, # TODO
+    oracle_price_l1_gas = 0, # TODO
+    oracle_price_l1_blobgas = 0, # TODO
+    oracle_proving_cost = 0, # TODO
+    congestion_multiplier = 1.0, # TODO
+    excess_mana = 0, # TODO
+
 
     # State Metrics
     market_price_juice_per_mana=float('nan'),
