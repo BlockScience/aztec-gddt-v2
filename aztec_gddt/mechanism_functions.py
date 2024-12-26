@@ -9,10 +9,10 @@ def block_reward(
     curr_reward_time: int,
     prev_reward_time: int,
     prev_reward_value: Token,
-    drift_speed_adj: float = 5.5e-4,
-    drift_decay_rate: float = 3.17e-6,
-    volatility_coefficient: float = 3.17e-6,
-    volatility_decay_rate: float = 1e-2
+    drift_speed_adj: float,
+    drift_decay_rate: float,
+    volatility_coefficient: float,
+    volatility_decay_rate: float
 ) -> Token:
     """
     High-level goal:
@@ -166,10 +166,22 @@ def proving_cost_fn(minimum_proving_cost_wei_per_mana: WeiPerMana,
 
 def juice_per_wei_price_fn(minimum_fee_asset_per_wei: JuicePerWei,
                         fee_juice_price_modifier: float,
-                        fee_asset_per_wei_update_fraction: float) -> JuicePerWei:
+                        fee_asset_per_wei_update_fraction: float,
+                        old_juice_per_wei_price: JuicePerWei,
+                        max_fee_juice_price_relative_change: Percentage) -> JuicePerWei:
+    
     exp_term = math.exp(fee_juice_price_modifier / fee_asset_per_wei_update_fraction)
-    return minimum_fee_asset_per_wei * exp_term
+    new_juice_per_wei_price: JuicePerWei = minimum_fee_asset_per_wei * exp_term
 
+    max_price: JuicePerWei = old_juice_per_wei_price * (1 + max_fee_juice_price_relative_change)
+    min_price: JuicePerWei = old_juice_per_wei_price * (1 - max_fee_juice_price_relative_change)
+
+    if new_juice_per_wei_price > max_price:
+        return max_price
+    elif new_juice_per_wei_price < min_price:
+        return min_price
+    else: 
+        return new_juice_per_wei_price
 
 def base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
 

@@ -31,25 +31,25 @@ DEFAULT_INITIAL_STATE = ModelState(
     PROVING_COST_MODIFIER=0.0,
     current_epoch=DEFAULT_INITIAL_EPOCH,
     last_epoch=DEFAULT_LAST_EPOCH,
-    last_reward_time_in_l1=-999,
-    last_reward=0,
+    last_reward_time_in_l1=0, # XXX
+    last_reward=15_000, # XXX
     l1_gas_price=0,
     l1_blobgas_price=0
 )
 
 general_params = GeneralParams(OVERHEAD_MANA_PER_TX=10_000,
-                              MAXIMUM_MANA_PER_BLOCK=100, # TODO check
-                              TST_TOTAL_SUPPLY=1_000_000_000, # TODO check
-                              LAUNCH_VALUATION=1_000_000_000 # TODO check
+                              MAXIMUM_MANA_PER_BLOCK=20_000_000, # 20M or 40M
+                              TST_TOTAL_SUPPLY=500_000_000, # XXX
+                              LAUNCH_VALUATION=1_500_000_000 # XXX
 )
 
 fee_params = FeeParams(TARGET_MANA_PER_BLOCK=int(general_params.MAXIMUM_MANA_PER_BLOCK * 0.5)
                        )
 
 
-reward_params = RewardParams(BLOCK_REWARD_VOLATILITY=float('nan'), # TODO
-                             BLOCK_REWARD_DRIFT_DECAY_RATE=float('nan'), # TODO
-                             BLOCK_REWARD_SPEED_ADJ=float('nan') # TODO
+reward_params = RewardParams(BLOCK_REWARD_VOLATILITY=3.17e-6,
+                             BLOCK_REWARD_DRIFT_DECAY_RATE=1e-2, 
+                             BLOCK_REWARD_SPEED_ADJ=5.5e-4 
                              )
 
 

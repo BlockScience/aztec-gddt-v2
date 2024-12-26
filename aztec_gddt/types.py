@@ -110,17 +110,23 @@ class GeneralParams():
 class FeeParams():
     TARGET_MANA_PER_BLOCK: Mana # sweep, ~0.5 of GeneralParams.MAXIMUM_MANA_PER_BLOCK
     BLOBS_PER_BLOCK: int = 3 # fixed
+
     L1_GAS_TO_VERIFY: Gas = 1_000_000 # fixed
     L2_SLOTS_PER_EPOCH: int = 32 # fixed
     L1_GAS_TO_PUBLISH: Gas = 150_000 # fixed
-    L1_GAS_PER_BLOB: Gas = 2 ** 17 # TODO
-    MINIMUM_MULTIPLIER_CONGESTION: float = 1.0 # TODO
-    MINIMUM_PROVING_COST: WeiPerMana = 1.0 # TODO
-    MINIMUM_FEE_ASSET_PER_WEI: JuicePerWei = 1.0 # TODO
+    L1_GAS_PER_BLOB: Gas = 2 ** 17 # fixed
+
+    MINIMUM_MULTIPLIER_CONGESTION: float = 1.0 # fixed
+    MINIMUM_PROVING_COST: WeiPerMana = 1.0 # fixed
+    MINIMUM_FEE_JUICE_PER_WEI: JuicePerWei = 1.0 # fixed
+
     UPDATE_FRACTION_CONGESTION: float = 1.0 # TODO
     UPDATE_FRACTION_PROVING_COST: float = 1.0 # TODO
-    UPDATE_FRACTION_FEE_ASSET_PER_WEI: float = 1.0 # TODO
+    UPDATE_FRACTION_FEE_JUICE_PER_WEI: float = 1.0 # TODO
 
+    MAX_RELATIVE_CHANGE_CONGESTION: Percentage = 0.03 # TODO
+    MAX_RELATIVE_CHANGE_PROVING_COST: Percentage = 0.03 # TODO
+    MAX_RELATIVE_CHANGE_FEE_JUICE_PER_WEI: Percentage = 0.03 # TODO
 
     
 

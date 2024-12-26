@@ -4,13 +4,16 @@ from random import sample, random
 from aztec_gddt.types import Slot
 from aztec_gddt.mechanism_functions import block_reward
 
+
 def p_evolve_time(params: ModelParams, _2, _3, _4):
     return {'delta_l1_blocks': params['timestep_in_l1_blocks']}
 
+
 def s_blocks_passed(_1, _2, _3,
-                  state: ModelState,
-                  signal):
+                    state: ModelState,
+                    signal):
     return ('l1_blocks_passed', state['l1_blocks_passed'] + signal['delta_l1_blocks'])
+
 
 def s_delta_blocks(_1, _2, _3, _4, signal):
     return ('delta_l1_blocks', signal['delta_l1_blocks'])
@@ -29,7 +32,7 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
     else:
         curr_slot = epoch.slots[-1]
-        
+
     l1_blocks_since_slot_init = state['l1_blocks_passed'] - \
         curr_slot.init_time_in_l1
 
@@ -46,18 +49,19 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             # XXX consider using a random distribution
             curr_slot.tx_count = params['behavior'].AVERAGE_TX_COUNT_PER_SLOT
             # XXX consider adding a random term
-            curr_slot.tx_total_mana = curr_slot.tx_count * params['general'].OVERHEAD_MANA_PER_TX
+            curr_slot.tx_total_mana = curr_slot.tx_count * \
+                params['general'].OVERHEAD_MANA_PER_TX
     else:
 
+        l1_blocks_since_epoch_init = state['l1_blocks_passed'] - \
+            epoch.init_time_in_l1
 
-        l1_blocks_since_epoch_init = state['l1_blocks_passed'] - epoch.init_time_in_l1
-            
-        epoch_still_ongoing = (l1_blocks_since_epoch_init <= 
-                                     params['general'].L2_SLOTS_PER_L2_EPOCH 
-                                     * params['general'].L1_SLOTS_PER_L2_SLOT)
-        
-        epoch_still_has_slots = len(epoch.slots) < params['general'].L2_SLOTS_PER_L2_EPOCH
+        epoch_still_ongoing = (l1_blocks_since_epoch_init <=
+                               params['general'].L2_SLOTS_PER_L2_EPOCH
+                               * params['general'].L1_SLOTS_PER_L2_SLOT)
 
+        epoch_still_has_slots = len(
+            epoch.slots) < params['general'].L2_SLOTS_PER_L2_EPOCH
 
         # Move on to the next slot or epoch
         t1 = 0.75  # TODO
@@ -76,7 +80,7 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
                             time_until_E_BLOCK_PROPOSE=t1,
                             time_until_E_BLOCK_VALIDATE=t1 + t2,
                             time_until_E_BLOCK_SENT=t1 + t2 + t3)
-            
+
             epoch.slots.append(new_slot)
         else:
             last_epoch = deepcopy(epoch)
@@ -125,10 +129,8 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
     # 2. If time is over or slot is pending-finish, create new block
 
 
-
-
 def p_pending_epoch_proof(params: ModelParams, _2, _3,
-                  state: ModelState) -> dict:
+                          state: ModelState) -> dict:
     epoch = state['last_epoch']
     last_reward_time = state['last_reward_time_in_l1']
     last_reward = state['last_reward']
@@ -145,10 +147,14 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                 epoch.finalized = True
                 epoch.finalized_time_in_l1 = state['l1_blocks_passed']
 
-
-                last_reward = block_reward(state['l1_blocks_passed'],
-                                      last_reward_time,
-                                      last_reward)
+                last_reward = block_reward(
+                    curr_reward_time=state['l1_blocks_passed'],
+                    prev_reward_time=last_reward_time,
+                    prev_reward_value=last_reward,
+                    drift_speed_adj=params['reward'].BLOCK_REWARD_SPEED_ADJ,
+                    drift_decay_rate=params['reward'].BLOCK_REWARD_DRIFT_DECAY_RATE,
+                    volatility_coefficient=params['reward'].BLOCK_REWARD_VOLATILITY,
+                    volatility_decay_rate=params['reward'].BLOCK_REWARD_DRIFT_DECAY_RATE)
                 last_reward_time = epoch.finalized_time_in_l1
             else:
                 if t > params['general'].L2_SLOTS_PER_L2_EPOCH * params['general'].L1_SLOTS_PER_L2_SLOT:
@@ -169,7 +175,8 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
             else:
                 if len(epoch.prover_quotes) > 0:
                     # Select highest scoring quote
-                    prover = min(epoch.prover_quotes, key=epoch.prover_quotes.get) # type: ignore
+                    prover = min(epoch.prover_quotes,
+                                 key=epoch.prover_quotes.get)  # type: ignore
                     epoch.accepted_prover = prover
                     epoch.accepted_prover_quote = epoch.prover_quotes[prover]
                 else:
@@ -181,7 +188,6 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
             'last_reward_time_in_l1': last_reward_time}
 
 
-
 def transaction_fee(fee_params: FeeParams) -> Wei:
 
     # L1_gas_per_L2_block: Gas = L1_gas_per_block_proposed + blobs_per_block * POINT_EVALUATION_PRECOMPILE_GAS
@@ -189,13 +195,9 @@ def transaction_fee(fee_params: FeeParams) -> Wei:
 
     # wei_for_DA_per_L2_block: Wei = blobs_per_block * L1_gas_per_blob * wei_per_L1_blob_gas
 
-
     # L1_cost_per_mana = L1_cost_per_L2_cost / fee_params.TARGET_MANA_PER_BLOCK
 
     return 0
-
-
-
 
 
 def replace_suf(variable: str, default_value=0.0):
