@@ -67,9 +67,9 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             # NOTE: slot is created here
             new_slot = Slot(state['l1_blocks_passed'],
                             proposer,
-                            t1,
-                            t1 + t2,
-                            t1 + t2 + t3)
+                            time_until_E_BLOCK_PROPOSE=t1,
+                            time_until_E_BLOCK_VALIDATE=t1 + t2,
+                            time_until_E_BLOCK_SENT=t1 + t2 + t3)
             
             epoch.slots.append(new_slot)
         else:
@@ -92,9 +92,9 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             # NOTE: slot is created here
             new_slot = Slot(state['l1_blocks_passed'],
                             proposer,
-                            t1,
-                            t1 + t2,
-                            t1 + t2 + t3)
+                            time_until_E_BLOCK_PROPOSE=t1,
+                            time_until_E_BLOCK_VALIDATE=t1 + t2,
+                            time_until_E_BLOCK_SENT=t1 + t2 + t3)
 
             t4 = 5
             t5 = t4 + 1
