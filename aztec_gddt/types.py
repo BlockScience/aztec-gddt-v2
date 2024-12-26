@@ -37,6 +37,8 @@ class Slot():
     has_proposal_on_network: bool = False
     has_validator_signatures: bool = False
     has_block_header_on_l1: bool = False
+    tx_count: int = 0
+    tx_total_mana: Mana = 0
 
 
     @property
@@ -134,6 +136,11 @@ class ProvingParams():
     MAX_BASIS_POINT_FEE: Percentage = 0.9 # control, fixed
 
 
+@dataclass
+class BehavioralParams():
+    AVERAGE_TX_COUNT_PER_SLOT: int
+
+
 class ModelParams(TypedDict):
     label: str
     timestep_in_l1_blocks: int
@@ -143,6 +150,7 @@ class ModelParams(TypedDict):
     reward: RewardParams
     stake: StakingParams
     slash: SlashingParams
+    behavior: BehavioralParams
 
 
 

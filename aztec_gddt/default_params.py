@@ -56,10 +56,13 @@ stake_params = StakingParams()
 slash_params = SlashingParams(BOND_SIZE=1)
 
 
+behavioral_params = BehavioralParams(AVERAGE_TX_COUNT_PER_SLOT=360)
+
 DEFAULT_PARAMS = ModelParams(label='default',
                              timestep_in_l1_blocks=1,
                              general=general_params,
                              fee=fee_params,
                              reward=reward_params,
                              stake=stake_params,
-                             slash=slash_params)
+                             slash=slash_params,
+                             behavior=behavioral_params)

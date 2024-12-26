@@ -42,6 +42,11 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
         if l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_PROPOSE:
             curr_slot.has_proposal_on_network = True
+
+            # XXX consider using a random distribution
+            curr_slot.tx_count = params['behavior'].AVERAGE_TX_COUNT_PER_SLOT
+            # XXX consider adding a random term
+            curr_slot.tx_total_mana = curr_slot.tx_count * params['general'].OVERHEAD_MANA_PER_TX
     else:
 
 
