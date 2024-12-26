@@ -32,7 +32,9 @@ DEFAULT_INITIAL_STATE = ModelState(
     current_epoch=DEFAULT_INITIAL_EPOCH,
     last_epoch=DEFAULT_LAST_EPOCH,
     last_reward_time_in_l1=-999,
-    last_reward=0.0
+    last_reward=0,
+    l1_gas_price=0,
+    l1_blobgas_price=0
 )
 
 general_params = GeneralParams(OVERHEAD_MANA_PER_TX=10_000,

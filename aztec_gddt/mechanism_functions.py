@@ -2,18 +2,18 @@ import numpy as np # type: ignore
 import matplotlib.pyplot as plt # type: ignore
 from typing import Callable # type: ignore
 import math # type: ignore
-
+from aztec_gddt.types import *
 
 
 def block_reward(
     curr_reward_time: int,
     prev_reward_time: int,
-    prev_reward_value: float,
+    prev_reward_value: Token,
     drift_speed_adj: float = 5.5e-4,
     drift_decay_rate: float = 3.17e-6,
     volatility_coefficient: float = 3.17e-6,
     volatility_decay_rate: float = 1e-2
-) -> float:
+) -> Token:
     """
     High-level goal:
     Calculate the reward for a block based on the previous reward r_s and the time difference between current time t and previous time s.
@@ -95,3 +95,107 @@ def block_reward(
     reward = k2 * x_chi_square
 
     return reward
+
+
+def raw_base_fee(
+        # Parameters
+        min_congestion_multiplier: float,
+        congestion_multiplier_update_fraction: Percentage,
+        target_mana_per_block: Mana,
+        
+        # Market related
+        l1_gas_price: WeiPerGas,
+        l1_blobgas_price: WeiPerGas,
+        juice_per_wei_price: JuicePerWei,
+
+        # Tx related
+        blobs_per_block: int,
+        l1_gas_per_block: Gas,
+        l1_blobgas_per_block: Gas,
+    
+        # Metrics
+        past_proving_cost_value: WeiPerMana,
+        excess_mana: Mana,
+        
+        # Behavioral
+        proving_cost_change: float,
+        juice_per_wei_change: float,
+        ) -> JuicePerMana:
+    
+    l1_gas_cost_in_wei_per_l2block: Wei = l1_gas_per_block * l1_gas_price
+    l1_da_cost_in_wei_per_l2block: Wei = blobs_per_block * l1_blobgas_per_block * l1_blobgas_price
+
+
+    l1_cost_in_wei_per_l2block: Wei = l1_gas_cost_in_wei_per_l2block + l1_da_cost_in_wei_per_l2block
+
+    l1_cost_per_mana_in_wei: WeiPerMana = l1_cost_in_wei_per_l2block / target_mana_per_block
+
+
+    proving_cost_per_mana_in_wei: WeiPerMana = past_proving_cost_value * proving_cost_change
+
+
+    congestion: float = math.exp(excess_mana / congestion_multiplier_update_fraction)
+    congestion_multiplier: float = min_congestion_multiplier * congestion
+
+    wei_per_mana = l1_cost_per_mana_in_wei + proving_cost_per_mana_in_wei
+
+
+
+    base_fee_in_wei_per_mana: WeiPerMana = wei_per_mana * congestion_multiplier
+    juice_per_wei: JuicePerWei = juice_per_wei_price * juice_per_wei_change
+
+    base_fee_in_juice_per_mana: JuicePerMana = base_fee_in_wei_per_mana * juice_per_wei
+
+    return base_fee_in_juice_per_mana
+
+
+def excess_mana_fn(past_excess: Mana,
+                past_spent: Mana,
+                target_mana: Mana) -> Mana:
+    if (past_excess + past_spent) > target_mana:
+        return past_excess + past_spent - target_mana
+    else:
+        return 0
+    
+
+def proving_cost_fn(minimum_proving_cost_wei_per_mana: WeiPerMana,
+                 proving_cost_modifier: float,
+                 proving_cost_update_fraction: float) -> WeiPerMana:
+    exp_term = math.exp(proving_cost_modifier / proving_cost_update_fraction)
+    return minimum_proving_cost_wei_per_mana * exp_term
+
+def juice_per_wei_price_fn(minimum_fee_asset_per_wei: JuicePerWei,
+                        fee_juice_price_modifier: float,
+                        fee_asset_per_wei_update_fraction: float) -> JuicePerWei:
+    exp_term = math.exp(fee_juice_price_modifier / fee_asset_per_wei_update_fraction)
+    return minimum_fee_asset_per_wei * exp_term
+
+
+def base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
+
+    l1_gas_for_da = params['fee'].BLOBS_PER_BLOCK * params['fee'].L1_GAS_PER_BLOB
+
+
+    juice_per_wei_price = 0.0 # TODO
+    l1_gas_per_block = params['fee'].L1_GAS_TO_VERIFY + params['fee'].L1_GAS_TO_PUBLISH + l1_gas_for_da
+    l1_blobgas_per_block = 0 # TODO
+    past_proving_cost_value = 0.0 # TODO
+    excess_mana = 0 # TODO
+    proving_cost_change = 0.0 # TODO
+    juice_per_wei_change = 0.0 # TODO
+
+    return raw_base_fee(
+        min_congestion_multiplier=params['fee'].MINIMUM_MULTIPLIER_CONGESTION,
+        congestion_multiplier_update_fraction=params['fee'].UPDATE_FRACTION_CONGESTION,
+        target_mana_per_block=params['fee'].TARGET_MANA_PER_BLOCK,
+        l1_gas_price=state['l1_gas_price'],
+        l1_blobgas_price=state['l1_blobgas_price'],
+        juice_per_wei_price=juice_per_wei_price,
+        blobs_per_block=params['fee'].BLOBS_PER_BLOCK,
+        l1_gas_per_block=l1_gas_per_block,
+        l1_blobgas_per_block=l1_blobgas_per_block,
+        past_proving_cost_value=past_proving_cost_value,
+        excess_mana=excess_mana,
+        proving_cost_change=proving_cost_change,
+        juice_per_wei_change=juice_per_wei_change
+                 )

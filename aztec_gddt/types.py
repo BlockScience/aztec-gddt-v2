@@ -15,6 +15,10 @@ Fiat = float
 
 Wei = Annotated[int, 'wei'] # 1e-18 ETH
 Gas = Annotated[int, 'gas'] 
+WeiPerGas = Annotated[int, 'wei/gas']
+WeiPerMana = Annotated[float, 'wei/mana']
+JuicePerWei = Annotated[float, 'juice/wei']
+JuicePerMana = Annotated[float, 'juice/mana']
 
 Juice = Annotated[int, 'juice'] # Aztec's analogue to Wei
 Mana = Annotated[int, 'mana'] # Aztec's analogue to Gas
@@ -86,6 +90,9 @@ class ModelState(TypedDict):
     last_reward: Token
     last_reward_time_in_l1: BlocksL1
 
+    l1_gas_price: WeiPerGas
+    l1_blobgas_price: WeiPerGas
+
 
 
 @dataclass
@@ -106,7 +113,16 @@ class FeeParams():
     L1_GAS_TO_VERIFY: Gas = 1_000_000 # fixed
     L2_SLOTS_PER_EPOCH: int = 32 # fixed
     L1_GAS_TO_PUBLISH: Gas = 150_000 # fixed
+    L1_GAS_PER_BLOB: Gas = 2 ** 17 # TODO
+    MINIMUM_MULTIPLIER_CONGESTION: float = 1.0 # TODO
+    MINIMUM_PROVING_COST: WeiPerMana = 1.0 # TODO
+    MINIMUM_FEE_ASSET_PER_WEI: JuicePerWei = 1.0 # TODO
+    UPDATE_FRACTION_CONGESTION: float = 1.0 # TODO
+    UPDATE_FRACTION_PROVING_COST: float = 1.0 # TODO
+    UPDATE_FRACTION_FEE_ASSET_PER_WEI: float = 1.0 # TODO
 
+
+    
 
 @dataclass
 class RewardParams():
@@ -144,13 +160,13 @@ class BehavioralParams():
 class ModelParams(TypedDict):
     label: str
     timestep_in_l1_blocks: int
-
     general: GeneralParams
     fee: FeeParams
     reward: RewardParams
     stake: StakingParams
     slash: SlashingParams
     behavior: BehavioralParams
+
 
 
 
