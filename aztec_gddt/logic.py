@@ -1,6 +1,6 @@
 from aztec_gddt.types import *
 from copy import deepcopy, copy
-from random import sample, random
+from random import sample, random, uniform
 from aztec_gddt.types import Slot
 from aztec_gddt.mechanism_functions import block_reward
 import math
@@ -27,6 +27,8 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
     epoch = deepcopy(state['current_epoch'])
     dropped_tx = 0
     excl_tx = 0
+    excess = state['excess_mana']
+    l2_blocks_passed = 0
 
     # Interpret zero slots as a signal for creating a new Epoch
     if len(epoch.slots) == 0:
@@ -51,13 +53,24 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
             # XXX consider using a random distribution
             curr_slot.tx_count = params['behavior'].AVERAGE_TX_COUNT_PER_SLOT
-            # XXX consider adding a random term
-            curr_slot.tx_total_mana = curr_slot.tx_count * \
-                params['general'].OVERHEAD_MANA_PER_TX
+            # # XXX consider adding a random term
+            # curr_slot.tx_total_mana = curr_slot.tx_count * \
+            #     params['general'].OVERHEAD_MANA_PER_TX
+            # HACK
+            curr_slot.tx_total_mana = int(params['general'].MAXIMUM_MANA_PER_BLOCK * uniform(0.45, 0.54))
     else:
         # If slot time has expired
         # then check whatever there's still
         # space-time on the epoch
+
+
+
+        # Compute excess mana during this block
+        spent = curr_slot.tx_total_mana
+        excess = max(excess + spent - params['fee'].TARGET_MANA_PER_BLOCK, 0)
+        l2_blocks_passed += 1
+
+
         l1_blocks_since_epoch_init = state['l1_blocks_passed'] - \
             epoch.init_time_in_l1
 
@@ -128,7 +141,9 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
     return {'current_epoch': epoch,
             'last_epoch': last_epoch,
             'cumm_dropped_tx': dropped_tx,
-            'cumm_excl_tx': excl_tx}
+            'cumm_excl_tx': excl_tx,
+            'excess_mana': excess,
+            'l2_blocks_passed': l2_blocks_passed}
 
 
 def p_pending_epoch_proof(params: ModelParams, _2, _3,

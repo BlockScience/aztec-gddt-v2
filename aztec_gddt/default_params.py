@@ -26,6 +26,7 @@ DEFAULT_LAST_EPOCH = invalid_epoch
 DEFAULT_INITIAL_STATE = ModelState(
     l1_blocks_passed=0,
     delta_l1_blocks=0,
+    l2_blocks_passed=0,
     agents=DEFAULT_INITIAL_AGENTS,
     validator_set=set(),
     PROVING_COST_MODIFIER=0.0,
@@ -67,7 +68,8 @@ general_params = GeneralParams(OVERHEAD_MANA_PER_TX=10_000,
                               LAUNCH_VALUATION=1_500_000_000 # XXX
 )
 
-fee_params = FeeParams(TARGET_MANA_PER_BLOCK=int(general_params.MAXIMUM_MANA_PER_BLOCK * 0.5)
+fee_params = FeeParams(TARGET_MANA_PER_BLOCK=int(general_params.MAXIMUM_MANA_PER_BLOCK * 0.5),
+                       UPDATE_FRACTION_CONGESTION=general_params.MAXIMUM_MANA_PER_BLOCK # HACK
                        )
 
 

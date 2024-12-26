@@ -20,7 +20,9 @@ RAW_MODEL_BLOCKS = [
         'policies': {
 
         },
-        'congestion_multiplier': s_congestion_multiplier
+        'variables': {
+            'congestion_multiplier': s_congestion_multiplier
+        }
     },
     {
         'label': 'Epoch/Slot evolution',
@@ -34,6 +36,8 @@ RAW_MODEL_BLOCKS = [
             'last_epoch': replace_suf,
             'cumm_dropped_tx': add_suf,
             'cumm_excl_tx': add_suf,
+            'excess_mana': replace_suf,
+            'l2_blocks_passed': add_suf
         }
     },
     {

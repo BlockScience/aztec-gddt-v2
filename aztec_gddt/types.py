@@ -78,6 +78,7 @@ class Agent():
 
 class ModelState(TypedDict):
     l1_blocks_passed: BlocksL1
+    l2_blocks_passed: BlocksL2
     delta_l1_blocks: BlocksL1
     agents: list[Agent]
     validator_set: set[AgentUUID]
