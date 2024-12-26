@@ -171,6 +171,7 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     epoch.reorged = True
 
     return {'last_epoch': epoch,
+            'last_reward': last_reward,
             'last_reward_time_in_l1': last_reward_time}
 
 
@@ -178,7 +179,7 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
 def block_reward(time_in_l1_blocks: BlocksL1,
                 last_reward_time_in_l1_blocks: BlocksL1,
                 last_reward: Token) -> Token:
-    return 0.0
+    return random()
 
 
 def transaction_fee(fee_params: FeeParams) -> Wei:
