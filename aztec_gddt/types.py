@@ -93,7 +93,7 @@ class ModelState(TypedDict):
     last_reward_time_in_l1: BlocksL1
 
     # Market & Oracle Values
-    market_price_l1_juice_per_mana: WeiPerGas # TODO
+    market_price_juice_per_mana: JuicePerMana # TODO
     market_price_l1_gas: WeiPerGas # TODO
     market_price_l1_blobgas: WeiPerGas # TODO
     oracle_price_juice_per_mana: JuicePerMana # TODO
@@ -104,7 +104,6 @@ class ModelState(TypedDict):
     excess_mana: Mana # TODO
 
     # State Metrics
-    market_price_juice_per_mana: JuicePerMana
     base_fee: JuicePerMana
     cumm_empty_blocks: int
     cumm_unproven_epochs: int
@@ -126,7 +125,7 @@ class GeneralParams():
     L2_SLOTS_PER_L2_EPOCH: BlocksL2 = 32 # fixed
     L1_SLOTS_PER_L2_SLOT: BlocksL1 = 3  # fixed
     PROVER_SEARCH_PERIOD: BlocksL2 = 13 # fixed
-
+    ORACLE_UPDATE_FREQUENCY_E: BlocksL1 = 5 # TODO
 
 @dataclass
 class FeeParams():

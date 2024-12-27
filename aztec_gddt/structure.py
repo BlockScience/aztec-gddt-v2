@@ -15,7 +15,30 @@ RAW_MODEL_BLOCKS = [
         }
     },
     {
+        'label': 'Set Exogenous Variables',
+        'policies': {
+
+        },
+        'variables': {
+            'market_price_juice_per_mana': s_market_price_juice_per_mana,
+            'market_price_l1_gas': s_market_price_l1_gas,
+            'market_price_l1_blobgas': s_market_price_l1_blobgas,
+        }
+    },
+    {
         'label': 'Oracles',
+        'ignore': False,
+        'policies': {
+
+        },
+        'variables': {
+            'oracle_price_juice_per_mana': s_oracle_price_juice_per_mana,
+            'oracle_price_l1_gas': s_oracle_price_l1_gas,
+            'oracle_price_l1_blobgas': s_oracle_price_l1_blobgas
+        }
+    },
+    {
+        'label': 'Contract Values',
         'ignore': False,
         'policies': {
 

@@ -1,6 +1,6 @@
 from aztec_gddt.types import *
 from copy import deepcopy, copy
-from random import sample, random, uniform
+from random import sample, random, uniform, normalvariate
 from aztec_gddt.types import Slot
 from aztec_gddt.mechanism_functions import block_reward
 import math
@@ -266,6 +266,43 @@ def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, sign
     return ('congestion_multiplier', multiplier)
 
 
+
+def generic_oracle(var_real, var_oracle):
+    def s_oracle_update(params: ModelParams, _2, _3, state: dict, signal) -> tuple:
+
+        value = state[var_oracle] 
+
+        # TODO: check if this is expected
+        if (state['l1_blocks_passed'] % params['general'].
+        ORACLE_UPDATE_FREQUENCY_E) == 0:
+            value = state[var_real]
+
+        return (var_oracle, value)
+    return s_oracle_update
+
+s_oracle_price_juice_per_mana = generic_oracle('market_price_juice_per_mana', 'oracle_price_juice_per_mana')
+
+s_oracle_price_l1_gas = generic_oracle('market_price_l1_gas', 'oracle_price_l1_gas')
+
+s_oracle_price_l1_blobgas = generic_oracle('market_price_l1_blobgas', 'oracle_price_l1_blobgas')
+
+
+def generic_random_walk(var, mu, std, do_round=True):
+    def s_random_walk(params: ModelParams, _2, _3, state: dict, signal) -> tuple:
+
+        raw_value = max(state[var] + normalvariate(mu, std), 0)
+        if do_round:
+            value = round(raw_value)
+        else:
+            value = raw_value
+        
+        return (var, value)
+    return s_random_walk
+
+
+s_market_price_juice_per_mana = generic_random_walk('market_price_juice_per_mana', 0, 1, False)
+s_market_price_l1_gas = generic_random_walk('market_price_l1_gas', 0, 1, True)
+s_market_price_l1_blobgas = generic_random_walk('market_price_l1_blobgas', 0, 1, True)
 
 def replace_suf(variable: str, default_value=0.0):
     """Creates replacing function for state update from string

@@ -38,19 +38,18 @@ DEFAULT_INITIAL_STATE = ModelState(
     last_reward=15_000, # XXX
 
     # Market & Oracle Values
-    market_price_l1_juice_per_mana = 0, # TODO
-    market_price_l1_gas = 0, # TODO
-    market_price_l1_blobgas = 0, # TODO
-    oracle_price_juice_per_mana = 0, # TODO
-    oracle_price_l1_gas = 0, # TODO
-    oracle_price_l1_blobgas = 0, # TODO
+    market_price_juice_per_mana = 5.0, # TODO
+    market_price_l1_gas = 30, # TODO
+    market_price_l1_blobgas = 5, # TODO
+    oracle_price_juice_per_mana = 4.0, # TODO
+    oracle_price_l1_gas = 28, # TODO
+    oracle_price_l1_blobgas = 4, # TODO
     oracle_proving_cost = 0, # TODO
     congestion_multiplier = 1.0, # TODO
     excess_mana = 0, # TODO
 
 
     # State Metrics
-    market_price_juice_per_mana=float('nan'),
     base_fee=float('nan'),
     cumm_empty_blocks=0,
     cumm_unproven_epochs=0,
