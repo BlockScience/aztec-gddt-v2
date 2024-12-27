@@ -154,6 +154,7 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
 def p_pending_epoch_proof(params: ModelParams, _2, _3,
                           state: ModelState) -> dict:
+    agents = state['agents']
     epoch = state['last_epoch']
     last_reward_time = state['last_reward_time_in_l1']
     last_reward = state['last_reward']
@@ -196,6 +197,9 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                 delta_finalized_epochs +=1
                 delta_cumm_mana += sum(s.tx_total_mana for s in epoch.slots)
                 delta_finalized_blocks += len(epoch.slots)
+                agents = deepcopy(agents)
+                for a in agents:
+                    a.score = random()
             else:
                 # If prover didn't finalize, then
                 if t > params['general'].L2_SLOTS_PER_L2_EPOCH * params['general'].L1_SLOTS_PER_L2_SLOT:
@@ -206,6 +210,9 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     delta_empty_blocks += len(epoch.slots)
                     delta_unproven_epochs += 1
                     delta_resolved_epochs += 1
+                    agents = deepcopy(agents)
+                    for a in agents:
+                        a.score = random()
 
                 else:
                     # Or just wait
@@ -242,6 +249,9 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                 delta_empty_blocks += len(epoch.slots)
                 delta_unproven_epochs += 1
                 delta_resolved_epochs += 1
+                agents = deepcopy(agents)
+                for a in agents:
+                    a.score = random()
 
     return {'last_epoch': epoch,
             'last_reward': last_reward,
@@ -252,6 +262,7 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
             'cumm_finalized_epochs': delta_finalized_epochs,
             'cumm_mana_used_on_finalized_blocks': delta_cumm_mana,
             'cumm_finalized_blocks': delta_finalized_blocks,
+            'agents': agents
             }
 
 
@@ -270,6 +281,7 @@ def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, sign
         multiplier = lower_multiplier
 
     return ('congestion_multiplier', multiplier)
+
 
 
 

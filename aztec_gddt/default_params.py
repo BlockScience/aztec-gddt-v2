@@ -3,12 +3,15 @@ from random import random
 
 
 
+DEFAULT_BOND_SIZE: Juice = 1
+
 N_AGENTS = 300
 DEFAULT_INITIAL_AGENTS = []
 for i in range(N_AGENTS):
     a = Agent(uuid=str(i), 
-              commitment_bond=5 * random(), 
-              score=5 * random())
+              commitment_bond=5 * random() * DEFAULT_BOND_SIZE, 
+              score=random()
+              )
     DEFAULT_INITIAL_AGENTS.append(a)
 
 
@@ -80,7 +83,7 @@ reward_params = RewardParams(BLOCK_REWARD_VOLATILITY=3.17e-6,
 
 stake_params = StakingParams()
 
-slash_params = SlashingParams(BOND_SIZE=1)
+slash_params = SlashingParams(BOND_SIZE=DEFAULT_BOND_SIZE)
 
 
 behavioral_params = BehavioralParams(AVERAGE_TX_COUNT_PER_SLOT=360)

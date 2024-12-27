@@ -1,7 +1,7 @@
 from aztec_gddt.logic import *
 from copy import deepcopy
 
-RAW_MODEL_BLOCKS = [
+RAW_MODEL_BLOCKS: list[dict] = [
     {
         'label': 'Time Tracking',
         'ignore': False,
@@ -26,7 +26,7 @@ RAW_MODEL_BLOCKS = [
         }
     },
     {
-        'label': 'Oracles',
+        'label': 'Oracles & Scoring Functions',
         'ignore': False,
         'policies': {
 
@@ -79,7 +79,8 @@ RAW_MODEL_BLOCKS = [
             'cumm_resolved_epochs': add_suf,
             'cumm_finalized_epochs': add_suf,
             'cumm_mana_used_on_finalized_blocks': add_suf,
-            'cumm_finalized_blocks': add_suf
+            'cumm_finalized_blocks': add_suf,
+            'agents': replace_suf
         }
     }
 ]
@@ -88,9 +89,9 @@ RAW_MODEL_BLOCKS = [
 
 
 
-blocks = []
+blocks: list[dict] = []
 for block in [b for b in RAW_MODEL_BLOCKS if b.get("ignore", False) != True]:
-    _block = deepcopy(block)
+    _block: dict = deepcopy(block)
     for variable, suf in block.get("variables", {}).items(): # type: ignore
         if suf == add_suf:
             _block["variables"][variable] = add_suf(variable) # type: ignore
