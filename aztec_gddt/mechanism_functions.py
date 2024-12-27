@@ -168,7 +168,7 @@ def juice_per_wei_price_fn(minimum_fee_asset_per_wei: JuicePerWei,
     else: 
         return new_juice_per_wei_price
 
-def base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
+def compute_base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
 
     l1_gas_for_da: Gas = params['fee'].BLOBS_PER_BLOCK * params['fee'].POINT_EVALUATION_PRECOMIPLE_GAS
 

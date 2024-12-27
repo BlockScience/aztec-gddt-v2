@@ -2,7 +2,7 @@ from aztec_gddt.types import *
 from copy import deepcopy, copy
 from random import sample, random, uniform, normalvariate
 from aztec_gddt.types import Slot
-from aztec_gddt.mechanism_functions import block_reward
+from aztec_gddt.mechanism_functions import block_reward, compute_base_fee
 import math
 
 def p_evolve_time(params: ModelParams, _2, _3, _4):
@@ -29,6 +29,7 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
     excl_tx = 0
     excess = state['excess_mana']
     l2_blocks_passed = 0
+    base_fee = state['base_fee']
 
     # Interpret zero slots as a signal for creating a new Epoch
     if len(epoch.slots) == 0:
@@ -58,6 +59,10 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             #     params['general'].OVERHEAD_MANA_PER_TX
             # HACK
             curr_slot.tx_total_mana = int(params['general'].MAXIMUM_MANA_PER_BLOCK * uniform(0.45, 0.54))
+
+            # XXX: assume that base fee is computed when block is proposed
+            # FIXME
+            base_fee = compute_base_fee(params, state)
     else:
         # If slot time has expired
         # then check whatever there's still
@@ -143,7 +148,8 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             'cumm_dropped_tx': dropped_tx,
             'cumm_excl_tx': excl_tx,
             'excess_mana': excess,
-            'l2_blocks_passed': l2_blocks_passed}
+            'l2_blocks_passed': l2_blocks_passed,
+            'base_fee': base_fee}
 
 
 def p_pending_epoch_proof(params: ModelParams, _2, _3,

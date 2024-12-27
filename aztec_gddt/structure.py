@@ -60,7 +60,8 @@ RAW_MODEL_BLOCKS = [
             'cumm_dropped_tx': add_suf,
             'cumm_excl_tx': add_suf,
             'excess_mana': replace_suf,
-            'l2_blocks_passed': add_suf
+            'l2_blocks_passed': add_suf,
+            'base_fee': replace_suf
         }
     },
     {
