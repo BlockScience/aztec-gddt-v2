@@ -59,6 +59,7 @@ RAW_MODEL_BLOCKS: list[dict] = [
             'last_epoch': replace_suf,
             'cumm_dropped_tx': add_suf,
             'cumm_excl_tx': add_suf,
+            'cumm_total_tx': add_suf,
             'excess_mana': replace_suf,
             'l2_blocks_passed': add_suf,
             'base_fee': replace_suf

@@ -27,6 +27,7 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
     epoch = deepcopy(state['current_epoch'])
     dropped_tx = 0
     excl_tx = 0
+    total_tx = 0
     excess = state['excess_mana']
     l2_blocks_passed = 0
     base_fee = state['base_fee']
@@ -54,6 +55,7 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
             # XXX consider using a random distribution
             curr_slot.tx_count = params['behavior'].AVERAGE_TX_COUNT_PER_SLOT
+            total_tx += curr_slot.tx_count
             # # XXX consider adding a random term
             # curr_slot.tx_total_mana = curr_slot.tx_count * \
             #     params['general'].OVERHEAD_MANA_PER_TX
@@ -63,6 +65,8 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             # XXX: assume that base fee is computed when block is proposed
             # FIXME
             base_fee = compute_base_fee(params, state)
+
+            # NOTE possibly add skipped / excluded txs somewhere here
     else:
         # If slot time has expired
         # then check whatever there's still
@@ -147,6 +151,7 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             'last_epoch': last_epoch,
             'cumm_dropped_tx': dropped_tx,
             'cumm_excl_tx': excl_tx,
+            'cumm_total_tx': total_tx,
             'excess_mana': excess,
             'l2_blocks_passed': l2_blocks_passed,
             'base_fee': base_fee}

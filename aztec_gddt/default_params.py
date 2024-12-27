@@ -58,6 +58,7 @@ DEFAULT_INITIAL_STATE = ModelState(
     cumm_unproven_epochs=0,
     cumm_dropped_tx=0,
     cumm_excl_tx=0,
+    cumm_total_tx=0,
     cumm_resolved_epochs=0,
     cumm_finalized_epochs=0,
     cumm_mana_used_on_finalized_blocks=0,

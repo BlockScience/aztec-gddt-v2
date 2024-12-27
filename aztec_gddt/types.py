@@ -109,6 +109,7 @@ class ModelState(TypedDict):
     cumm_unproven_epochs: int
     cumm_dropped_tx: int
     cumm_excl_tx: int
+    cumm_total_tx: int
     cumm_resolved_epochs: int
     cumm_finalized_epochs: int
     cumm_mana_used_on_finalized_blocks: Mana
