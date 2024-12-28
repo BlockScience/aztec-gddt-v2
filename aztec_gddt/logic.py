@@ -115,9 +115,9 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             epoch.slots) < params['general'].L2_SLOTS_PER_L2_EPOCH
 
         # Move on to the next slot or epoch
-        t1 = 0.75  # TODO
-        t2 = 0.25  # TODO
-        t3 = 0.5  # TODO
+        t1 = st.gamma.rvs(2, scale=1/5)
+        t2 = st.gamma.rvs(2, scale=1/3)
+        t3 = st.gamma.rvs(2, scale=1/10)
 
         i_slot = len(epoch.slots)
         if epoch_still_has_slots and epoch_still_ongoing:
@@ -161,15 +161,15 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
                             time_until_E_BLOCK_VALIDATE=t1 + t2,
                             time_until_E_BLOCK_SENT=t1 + t2 + t3)
 
-            t4 = 5
-            t5 = t4 + 1
+            t4 = st.geom.rvs(0.25)
+            t5 = st.geom.rvs(0.15)
 
             # NOTE: epoch is created here
             epoch = Epoch(init_time_in_l1=state['l1_blocks_passed'],
                           validators=validator_committee_ids,
                           slots=[new_slot],
                           time_until_E_EPOCH_QUOTE_ACCEPT=t4,
-                          time_until_E_EPOCH_FINISH=t5)
+                          time_until_E_EPOCH_FINISH=t5 + t4)
 
     return {'current_epoch': epoch,
             'last_epoch': last_epoch,
@@ -225,7 +225,8 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                 delta_resolved_epochs += 1
                 delta_finalized_epochs +=1
                 delta_cumm_mana += sum(s.tx_total_mana for s in epoch.slots)
-                delta_finalized_blocks += len(epoch.slots)
+                delta_finalized_blocks += len([s for s in epoch.slots if s.has_block_header_on_l1])
+                delta_empty_blocks += len([s for s in epoch.slots if not s.has_block_header_on_l1])
                 agents = deepcopy(agents)
                 for a in agents:
                     a.score = random()
