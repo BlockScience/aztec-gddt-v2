@@ -65,7 +65,7 @@ DEFAULT_INITIAL_STATE = ModelState(
     cumm_finalized_blocks=0
 )
 
-general_params = GeneralParams(OVERHEAD_MANA_PER_TX=10_000,
+general_params = GeneralParams(OVERHEAD_MANA_PER_TX=200_000,
                               MAXIMUM_MANA_PER_BLOCK=20_000_000, # 20M or 40M
                               TST_TOTAL_SUPPLY=500_000_000, # XXX
                               LAUNCH_VALUATION=1_500_000_000 # XXX
