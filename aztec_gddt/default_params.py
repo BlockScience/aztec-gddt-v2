@@ -53,7 +53,7 @@ DEFAULT_INITIAL_STATE = ModelState(
 
 
     # State Metrics
-    base_fee=float('nan'),
+    base_fee=10, # TODO
     cumm_empty_blocks=0,
     cumm_unproven_epochs=0,
     cumm_dropped_tx=0,

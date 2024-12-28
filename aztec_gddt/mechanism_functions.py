@@ -195,3 +195,16 @@ def compute_base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
         l1_blobgas_per_block=l1_blobgas_per_block,
 
         excess_mana=excess_mana)
+
+
+
+
+
+
+def expected_profit_per_tx(state: ModelState, 
+                           priority_fee: Token,
+                           prover_quote: Token,
+                           expected_reward: Token) -> JuicePerMana:
+    expected_cost: JuicePerMana = 0.0
+    expected_revenue: JuicePerMana = state['base_fee'] + priority_fee
+    return expected_revenue - expected_cost

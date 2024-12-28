@@ -87,17 +87,15 @@ RAW_MODEL_BLOCKS: list[dict] = [
 ]
 
 
-
-
-
 blocks: list[dict] = []
 for block in [b for b in RAW_MODEL_BLOCKS if b.get("ignore", False) != True]:
     _block: dict = deepcopy(block)
-    for variable, suf in block.get("variables", {}).items(): # type: ignore
+    for variable, suf in block.get("variables", {}).items():  # type: ignore
         if suf == add_suf:
-            _block["variables"][variable] = add_suf(variable) # type: ignore
+            _block["variables"][variable] = add_suf(variable)  # type: ignore
         elif suf == replace_suf:
-            _block["variables"][variable] = replace_suf(variable) # type: ignore
+            _block["variables"][variable] = replace_suf(
+                variable)  # type: ignore
 
     blocks.append(_block)
 

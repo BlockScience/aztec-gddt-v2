@@ -1,6 +1,8 @@
 from aztec_gddt.types import *
 from copy import deepcopy, copy
 from random import sample, random, uniform, normalvariate
+import numpy as np
+import scipy.stats as st
 from aztec_gddt.types import Slot
 from aztec_gddt.mechanism_functions import block_reward, compute_base_fee
 import math
@@ -60,11 +62,27 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             # curr_slot.tx_total_mana = curr_slot.tx_count * \
             #     params['general'].OVERHEAD_MANA_PER_TX
             # HACK
-            curr_slot.tx_total_mana = int(params['general'].MAXIMUM_MANA_PER_BLOCK * uniform(0.45, 0.54))
-
+            
             # XXX: assume that base fee is computed when block is proposed
             # FIXME
+            max_fee_avg: JuicePerMana = (1 + params['fee'].MAX_FEE_INFLATION_PER_BLOCK) * base_fee
             base_fee = compute_base_fee(params, state)
+
+
+            max_fees = st.norm.rvs(loc=max_fee_avg, 
+                                    scale=max_fee_avg/3, # FIXME this is an arbitrary assumption
+                                    size=[total_tx])
+            
+            dropped_tx = np.sum(max_fees < base_fee) # type: ignore
+
+
+            raw_total_mana = total_tx *  params['general'].OVERHEAD_MANA_PER_TX
+            raw_total_fee = raw_total_mana * base_fee
+            
+            excl_tx = 0
+            curr_slot.tx_total_mana = (total_tx - excl_tx - dropped_tx) * params['general'].OVERHEAD_MANA_PER_TX
+
+            
 
             # NOTE possibly add skipped / excluded txs somewhere here
     else:

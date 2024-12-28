@@ -26,7 +26,7 @@ Mana = Annotated[int, 'mana'] # Aztec's analogue to Gas
 @dataclass
 class Transaction():
     mana: Mana
-    max_fee_per_mana: int
+    # max_fee_per_mana: int
     priority_fee_per_mana: int
 
 
@@ -86,7 +86,7 @@ class ModelState(TypedDict):
     PROVING_COST_MODIFIER: float
 
     current_epoch: Epoch
-    last_epoch: Epoch
+    last_epoch: Epoch    
 
     # Block Reward related values
     last_reward: Token
@@ -150,6 +150,8 @@ class FeeParams():
     MAX_RELATIVE_CHANGE_CONGESTION: Percentage = 0.03 # TODO
     MAX_RELATIVE_CHANGE_PROVING_COST: Percentage = 0.03 # TODO
     MAX_RELATIVE_CHANGE_FEE_JUICE_PER_WEI: Percentage = 0.03 # TODO
+
+    MAX_FEE_INFLATION_PER_BLOCK = 0.10 # TODO
 
     
 
