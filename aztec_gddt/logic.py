@@ -4,7 +4,7 @@ from random import sample, random, uniform, normalvariate
 import numpy as np
 import scipy.stats as st
 from aztec_gddt.types import Slot
-from aztec_gddt.mechanism_functions import block_reward, compute_base_fee
+from aztec_gddt.mechanism_functions import block_reward, compute_base_fee, expected_profit_per_tx
 import math
 
 def p_evolve_time(params: ModelParams, _2, _3, _4):
@@ -70,10 +70,16 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
 
             max_fees = st.norm.rvs(loc=max_fee_avg, 
-                                    scale=max_fee_avg/3, # FIXME this is an arbitrary assumption
+                                    scale=max_fee_avg/2, # FIXME this is an arbitrary assumption
                                     size=[total_tx])
             
-            dropped_tx = np.sum(max_fees < base_fee) # type: ignore
+
+            inds_valid_due_to_max_above_base = max_fees > base_fee
+            inds_valid_due_to_profitability = expected_profit_per_tx(params, state, max_fees, 0.00, total_tx) > 0
+
+            inds = inds_valid_due_to_max_above_base & inds_valid_due_to_profitability
+            
+            dropped_tx = total_tx - np.sum(inds) # type: ignore
 
 
             raw_total_mana = total_tx *  params['general'].OVERHEAD_MANA_PER_TX
@@ -248,11 +254,10 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
 
                     # XXX
                     # Assume that each timestep
-                    # a random agent proposes a random percentage of his commit bond
-                    # up until 20%
+                    # a agent quotes between 0% and 50%
                     # FIXME
                     agent = sample(population=state['agents'], k=1)[0]
-                    quote = agent.commitment_bond * random() * 0.2
+                    quote = uniform(0.0, 0.5)
                     epoch.prover_quotes[agent.uuid] = quote
                 else:
                     # If time for acceptance is over, then
