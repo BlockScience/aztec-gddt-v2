@@ -202,9 +202,10 @@ def compute_base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
 
 
 def expected_profit_per_tx(state: ModelState, 
+                           
                            priority_fee: Token,
                            prover_quote: Token,
-                           expected_reward: Token) -> JuicePerMana:
-    expected_cost: JuicePerMana = 0.0
-    expected_revenue: JuicePerMana = state['base_fee'] + priority_fee
+                           expected_reward: Token) -> Token:
+    expected_cost: Token = 0.0
+    expected_revenue: Token = state['base_fee'] + priority_fee
     return expected_revenue - expected_cost
