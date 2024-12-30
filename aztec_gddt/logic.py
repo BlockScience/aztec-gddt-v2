@@ -4,7 +4,7 @@ from random import sample, random, uniform, normalvariate
 import numpy as np
 import scipy.stats as st
 from aztec_gddt.types import Slot
-from aztec_gddt.mechanism_functions import block_reward, compute_base_fee, expected_profit_per_tx
+from aztec_gddt.mechanism_functions import block_reward, compute_base_fee, expected_profit_per_tx, target_mana_per_block
 import math
 
 
@@ -44,7 +44,7 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
     l1_blocks_since_slot_init = state['l1_blocks_passed'] - \
         curr_slot.init_time_in_l1
 
-    if l1_blocks_since_slot_init < params['general'].L1_SLOTS_PER_L2_SLOT:
+    if l1_blocks_since_slot_init < params['L1_SLOTS_PER_L2_SLOT']:
         # If there's still slot time,
         # check whatever events have progressed
         if l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_SENT:
@@ -57,7 +57,7 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             curr_slot.has_proposal_on_network = True
 
             # XXX consider using a random distribution
-            curr_slot.tx_count = params['behavior'].AVERAGE_TX_COUNT_PER_SLOT
+            curr_slot.tx_count = params['AVERAGE_TX_COUNT_PER_SLOT']
             total_tx += curr_slot.tx_count
             # # XXX consider adding a random term
             # curr_slot.tx_total_mana = curr_slot.tx_count * \
@@ -67,7 +67,7 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             # XXX: assume that base fee is computed when block is proposed
             # FIXME
             max_fee_avg: JuicePerMana = (
-                1 + params['fee'].MAX_FEE_INFLATION_PER_BLOCK) * base_fee
+                1 + params['MAX_FEE_INFLATION_PER_BLOCK']) * base_fee
             base_fee = compute_base_fee(params, state)
 
             max_fees = st.norm.rvs(loc=max_fee_avg,
@@ -82,12 +82,12 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
             dropped_tx = total_tx - np.sum(inds)  # type: ignore
 
-            raw_total_mana = total_tx * params['general'].OVERHEAD_MANA_PER_TX
+            raw_total_mana = total_tx * params['OVERHEAD_MANA_PER_TX']
             raw_total_fee = raw_total_mana * base_fee
 
             excl_tx = 0
             curr_slot.tx_total_mana = (
-                total_tx - excl_tx - dropped_tx) * params['general'].OVERHEAD_MANA_PER_TX
+                total_tx - excl_tx - dropped_tx) * params['OVERHEAD_MANA_PER_TX']
 
             # NOTE possibly add skipped / excluded txs somewhere here
     else:
@@ -97,18 +97,18 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
         # Compute excess mana during this block
         spent = curr_slot.tx_total_mana
-        excess = max(excess + spent - params['fee'].TARGET_MANA_PER_BLOCK, 0)
+        excess = max(excess + spent - target_mana_per_block(params), 0)
         l2_blocks_passed += 1
 
         l1_blocks_since_epoch_init = state['l1_blocks_passed'] - \
             epoch.init_time_in_l1
 
         epoch_still_ongoing = (l1_blocks_since_epoch_init <=
-                               params['general'].L2_SLOTS_PER_L2_EPOCH
-                               * params['general'].L1_SLOTS_PER_L2_SLOT)
+                               params['L2_SLOTS_PER_L2_EPOCH']
+                               * params['L1_SLOTS_PER_L2_SLOT'])
 
         epoch_still_has_slots = len(
-            epoch.slots) < params['general'].L2_SLOTS_PER_L2_EPOCH
+            epoch.slots) < params['L2_SLOTS_PER_L2_EPOCH']
 
         # Move on to the next slot or epoch
         t1 = st.gamma.rvs(2, scale=1/5)
@@ -139,12 +139,11 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
             # N validators are drawn (based on score) to the validator committee from the validator set (i.e. from the set of staked users)
             validator_set = [a for a in state['agents']
-                             if a.commitment_bond >= params['slash'].BOND_SIZE]
+                             if a.commitment_bond >= params['BOND_SIZE']]
             ordered_validator_set = sorted(validator_set,
                                            key=lambda x: x.score,
                                            reverse=True)
-            validator_committee = ordered_validator_set[:
-                                                        params['stake'].VALIDATOR_COMMITTEE_SIZE]
+            validator_committee = ordered_validator_set[:params['VALIDATOR_COMMITTEE_SIZE']]
             validator_committee_ids = [a.uuid for a in validator_committee]
 
             # For each slot in the epoch a sequencer/block proposer is drawn (based on score) from the validator committee
@@ -210,10 +209,10 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     curr_reward_time=state['l1_blocks_passed'],
                     prev_reward_time=last_reward_time,
                     prev_reward_value=last_reward,
-                    drift_speed_adj=params['reward'].BLOCK_REWARD_SPEED_ADJ,
-                    drift_decay_rate=params['reward'].BLOCK_REWARD_DRIFT_DECAY_RATE,
-                    volatility_coefficient=params['reward'].BLOCK_REWARD_VOLATILITY,
-                    volatility_decay_rate=params['reward'].BLOCK_REWARD_DRIFT_DECAY_RATE)
+                    drift_speed_adj=params['BLOCK_REWARD_SPEED_ADJ'],
+                    drift_decay_rate=params['BLOCK_REWARD_DRIFT_DECAY_RATE'],
+                    volatility_coefficient=params['BLOCK_REWARD_VOLATILITY'],
+                    volatility_decay_rate=params['BLOCK_REWARD_DRIFT_DECAY_RATE'])
 
                 last_reward_time = epoch.finalized_time_in_l1
 
@@ -229,7 +228,7 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     a.score = random()
             else:
                 # If prover didn't finalize, then
-                if t > params['general'].L2_SLOTS_PER_L2_EPOCH * params['general'].L1_SLOTS_PER_L2_SLOT:
+                if t > params['L2_SLOTS_PER_L2_EPOCH'] * params['L1_SLOTS_PER_L2_SLOT']:
                     # Reorg epoch and slash prover if time is over
                     epoch.reorged = True
 
@@ -246,7 +245,7 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     pass
         else:
             # If there isn't an accepted prover, then
-            if t < params['general'].PROVER_SEARCH_PERIOD:
+            if t < params['PROVER_SEARCH_PERIOD']:
                 if t < epoch.time_until_E_EPOCH_QUOTE_ACCEPT:
                     # Create quotes while no one is accepted
 
@@ -295,14 +294,14 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
 def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, signal) -> tuple:
 
     upper_multiplier = state['congestion_multiplier'] * \
-        (1 + params['fee'].MAX_RELATIVE_CHANGE_CONGESTION)
+        (1 + params['MAX_RELATIVE_CHANGE_CONGESTION'])
 
     lower_multiplier = state['congestion_multiplier'] * \
-        (1 - params['fee'].MAX_RELATIVE_CHANGE_CONGESTION)
+        (1 - params['MAX_RELATIVE_CHANGE_CONGESTION'])
 
-    multiplier = params['fee'].MINIMUM_MULTIPLIER_CONGESTION * \
+    multiplier = params['MINIMUM_MULTIPLIER_CONGESTION'] * \
         math.exp(state['excess_mana'] /
-                 params['fee'].UPDATE_FRACTION_CONGESTION)
+                 params['UPDATE_FRACTION_CONGESTION'])
 
     if multiplier > upper_multiplier:
         multiplier = upper_multiplier
@@ -320,9 +319,9 @@ def generic_oracle(var_real, var_oracle, var_update_time):
         value = state[var_oracle]
         update_time = state[var_update_time]
 
-        if now > (update_time + params['general'].MIN_ORACLE_UPDATE_LAG_C):
+        if now > (update_time + params['MIN_ORACLE_UPDATE_LAG_C']):
             do_update = random(
-            ) < params['behavior'].ORACLE_UPDATE_FREQUENCY_E
+            ) < params['ORACLE_UPDATE_FREQUENCY_E']
             if do_update:
                 value = state[var_real]
                 update_time = now

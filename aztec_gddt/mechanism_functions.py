@@ -5,6 +5,10 @@ import math  # type: ignore
 from aztec_gddt.types import *
 
 
+def target_mana_per_block(params: ModelParams) -> Mana:
+    return int(params['MAXIMUM_MANA_PER_BLOCK'] * params['RELATIVE_TARGET_MANA_PER_BLOCK'])
+
+
 def block_reward(
     curr_reward_time: int,
     prev_reward_time: int,
@@ -173,13 +177,13 @@ def juice_per_wei_price_fn(minimum_fee_asset_per_wei: JuicePerWei,
 
 def compute_base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
 
-    l1_gas_for_da: Gas = params['fee'].BLOBS_PER_BLOCK * \
-        params['fee'].POINT_EVALUATION_PRECOMIPLE_GAS
+    l1_gas_for_da: Gas = params['BLOBS_PER_BLOCK'] * \
+        params['POINT_EVALUATION_PRECOMIPLE_GAS']
 
-    l1_gas_per_block: Gas = params['fee'].L1_GAS_TO_PUBLISH + l1_gas_for_da + int(
-        params['fee'].L1_GAS_TO_VERIFY / params['general'].L2_SLOTS_PER_L2_EPOCH)
-    l1_blobgas_per_block: Gas = params['fee'].L1_BLOBGAS_PER_BLOB * \
-        params['fee'].BLOBS_PER_BLOCK
+    l1_gas_per_block: Gas = params['L1_GAS_TO_PUBLISH'] + l1_gas_for_da + int(
+        params['L1_GAS_TO_VERIFY'] / params['L2_SLOTS_PER_L2_EPOCH'])
+    l1_blobgas_per_block: Gas = params['L1_BLOBGAS_PER_BLOB'] * \
+        params['BLOBS_PER_BLOCK']
     juice_per_wei_price = state['oracle_price_juice_per_mana']
     proving_cost_per_mana_in_wei = state['oracle_proving_cost']
     congestion_multiplier = state['congestion_multiplier']
@@ -187,7 +191,7 @@ def compute_base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
     excess_mana = state['excess_mana']
 
     return raw_base_fee(
-        target_mana_per_block=params['fee'].TARGET_MANA_PER_BLOCK,
+        target_mana_per_block=target_mana_per_block(params),
 
         l1_gas_price=state['oracle_price_l1_gas'],
         l1_blobgas_price=state['oracle_price_l1_blobgas'],
@@ -195,20 +199,20 @@ def compute_base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
         proving_cost_per_mana_in_wei=proving_cost_per_mana_in_wei,
         congestion_multiplier=congestion_multiplier,
 
-        blobs_per_block=params['fee'].BLOBS_PER_BLOCK,
+        blobs_per_block=params['BLOBS_PER_BLOCK'],
         l1_gas_per_block=l1_gas_per_block,
         l1_blobgas_per_block=l1_blobgas_per_block)
 
 
 def l2_block_cost_for_sequencer(params: ModelParams, state: ModelState) -> Juice:
 
-    l1_gas_for_da: Gas = params['fee'].BLOBS_PER_BLOCK * \
-        params['fee'].POINT_EVALUATION_PRECOMIPLE_GAS
+    l1_gas_for_da: Gas = params['BLOBS_PER_BLOCK'] * \
+        params['POINT_EVALUATION_PRECOMIPLE_GAS']
 
-    l1_gas_per_block: Gas = params['fee'].L1_GAS_TO_PUBLISH + l1_gas_for_da + int(
-        params['fee'].L1_GAS_TO_VERIFY / params['general'].L2_SLOTS_PER_L2_EPOCH)
-    l1_blobgas_per_block: Gas = params['fee'].L1_BLOBGAS_PER_BLOB * \
-        params['fee'].BLOBS_PER_BLOCK
+    l1_gas_per_block: Gas = params['L1_GAS_TO_PUBLISH'] + l1_gas_for_da + int(
+        params['L1_GAS_TO_VERIFY'] / params['L2_SLOTS_PER_L2_EPOCH'])
+    l1_blobgas_per_block: Gas = params['L1_BLOBGAS_PER_BLOB'] * \
+        params['BLOBS_PER_BLOCK']
     juice_per_wei_price = state['market_price_juice_per_mana']
     proving_cost_per_mana_in_wei = 0.0
     congestion_multiplier = 1.0
@@ -222,7 +226,7 @@ def l2_block_cost_for_sequencer(params: ModelParams, state: ModelState) -> Juice
         proving_cost_per_mana_in_wei=proving_cost_per_mana_in_wei,
         congestion_multiplier=congestion_multiplier,
 
-        blobs_per_block=params['fee'].BLOBS_PER_BLOCK,
+        blobs_per_block=params['BLOBS_PER_BLOCK'],
         l1_gas_per_block=l1_gas_per_block,
         l1_blobgas_per_block=l1_blobgas_per_block)  # type: ignore
 
