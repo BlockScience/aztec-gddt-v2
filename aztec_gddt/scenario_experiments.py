@@ -19,6 +19,7 @@ def scenario_group_1_experiment(N_timesteps: int = 1_000,
         'MINIMUM_MULTIPLIER_CONGESTION': [1.0],
         'UPDATE_FRACTION_CONGESTION': [20_000_000],
         'OVERHEAD_MANA_PER_TX': [1_000, 10_000, 20_000, 50_000],
+        'PROVING_COST_MODIFIER_INITIAL_C': [10, 100, 1000],
         'FEE_JUICE_PRICE_MODIFIER_INITIAL_C': [1.0],
         'MAXIMUM_UPDATE_PERCENTAGE_C': [0.3]
     }

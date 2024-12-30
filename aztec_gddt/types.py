@@ -77,14 +77,12 @@ class Agent():
 
 
 class ModelState(TypedDict):
+    timestep: int
     l1_blocks_passed: BlocksL1
     l2_blocks_passed: BlocksL2
     delta_l1_blocks: BlocksL1
     agents: list[Agent]
     validator_set: set[AgentUUID]
-
-    PROVING_COST_MODIFIER: float
-
     current_epoch: Epoch
     last_epoch: Epoch
 
@@ -93,19 +91,19 @@ class ModelState(TypedDict):
     last_reward_time_in_l1: BlocksL1
 
     # Market & Oracle Values
-    market_price_juice_per_mana: JuicePerMana
+    market_price_juice_per_wei: JuicePerWei
     market_price_l1_gas: WeiPerGas
     market_price_l1_blobgas: WeiPerGas
 
-    oracle_price_juice_per_mana: JuicePerMana
+    oracle_price_juice_per_wei: JuicePerWei
     oracle_price_l1_gas: WeiPerGas
     oracle_price_l1_blobgas: WeiPerGas
+    oracle_proving_cost: WeiPerMana
 
-    update_time_oracle_price_juice_per_mana: BlocksL1
+    update_time_oracle_price_juice_per_wei: BlocksL1
     update_time_oracle_price_l1_gas: BlocksL1
     update_time_oracle_price_l1_blobgas: BlocksL1
-
-    oracle_proving_cost: WeiPerMana
+    
     congestion_multiplier: float
     excess_mana: Mana
 
@@ -120,13 +118,6 @@ class ModelState(TypedDict):
     cumm_finalized_epochs: int
     cumm_mana_used_on_finalized_blocks: Mana
     cumm_finalized_blocks: BlocksL2
-
-
-@dataclass
-class ProvingParams():
-    MAXIMUM_PROVING_COST_WEI_PER_MANA_PERCENT_CHANGE_PER_L2_SLOT: Percentage  # control, sweep
-    MAX_BASIS_POINT_FEE: Percentage = 0.9  # control, fixed
-
 
 class ModelParams(TypedDict):
     label: str
@@ -145,25 +136,18 @@ class ModelParams(TypedDict):
     ### Fee ###
     RELATIVE_TARGET_MANA_PER_BLOCK: Percentage  # sweep
     BLOBS_PER_BLOCK: int
-
     L1_GAS_TO_VERIFY: Gas
     L2_SLOTS_PER_EPOCH: int
     L1_GAS_TO_PUBLISH: Gas
     L1_BLOBGAS_PER_BLOB: Gas
     POINT_EVALUATION_PRECOMIPLE_GAS: Gas
-
     MINIMUM_MULTIPLIER_CONGESTION: float
-    MINIMUM_PROVING_COST: WeiPerMana
-    MINIMUM_FEE_JUICE_PER_WEI: JuicePerWei
-
     UPDATE_FRACTION_CONGESTION: float
-    UPDATE_FRACTION_PROVING_COST: float
-    UPDATE_FRACTION_FEE_JUICE_PER_WEI: float
-
     MAX_RELATIVE_CHANGE_CONGESTION: Percentage
     MAXIMUM_UPDATE_PERCENTAGE_C: Percentage
-
     MAX_FEE_INFLATION_PER_BLOCK: Percentage
+    PROVING_COST_INITIAL_C: float
+    FEE_JUICE_PRICE_INITIAL_C: float
 
     ### Reward ###
     BLOCK_REWARD_VOLATILITY: float  # sweep
@@ -183,10 +167,7 @@ class ModelParams(TypedDict):
     PROVING_COST_MODIFICATION_E: Percentage  # env, sweep
     FEE_JUICE_PRICE_MODIFICATION_E: Percentage  # env, sweep
     ORACLE_UPDATE_FREQUENCY_E: Percentage  # env, sweep
-    JUICE_PER_MANA_MEAN: JuicePerMana
-    JUICE_PER_MANA_STD: JuicePerMana
+    JUICE_PER_WEI_MEAN: JuicePerMana
+    JUICE_PER_WEI_STD: JuicePerMana
 
-    # Misc
-    PROVING_COST_MODIFIER_INITIAL_C: WeiPerMana
-    FEE_JUICE_PRICE_MODIFIER_INITIAL_C: WeiPerMana
 

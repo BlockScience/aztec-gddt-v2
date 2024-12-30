@@ -20,7 +20,7 @@ RAW_MODEL_BLOCKS: list[dict] = [
 
         },
         'variables': {
-            'market_price_juice_per_mana': s_market_price_juice_per_mana,
+            'market_price_juice_per_wei': s_market_price_juice_per_wei,
             'market_price_l1_gas': s_market_price_l1_gas,
             'market_price_l1_blobgas': s_market_price_l1_blobgas,
         }
@@ -29,17 +29,17 @@ RAW_MODEL_BLOCKS: list[dict] = [
         'label': 'Oracles & Scoring Functions',
         'ignore': False,
         'policies': {
-            'juice_per_mana': p_oracle_juice_per_mana,
+            'juice_per_wei': p_oracle_juice_per_wei,
             'l1_gas': p_oracle_l1_gas,
             'l1_blobgas': p_oracle_l1_blobgas,
             'proving_cost': p_oracle_proving_cost
 
         },
         'variables': {
-            'oracle_price_juice_per_mana': replace_suf,
+            'oracle_price_juice_per_wei': replace_suf,
             'oracle_price_l1_gas': replace_suf,
             'oracle_price_l1_blobgas': replace_suf,
-            'update_time_oracle_price_juice_per_mana': replace_suf,
+            'update_time_oracle_price_juice_per_wei': replace_suf,
             'update_time_oracle_price_l1_gas': replace_suf,
             'update_time_oracle_price_l1_blobgas': replace_suf,
             'oracle_proving_cost': replace_suf

@@ -339,10 +339,23 @@ def generic_oracle(var_real, var_oracle, var_update_time, max_param=''):
     return p_oracle_update
 
 
-p_oracle_juice_per_mana = generic_oracle(
-    'market_price_juice_per_mana',
-    'oracle_price_juice_per_mana',
-    'update_time_oracle_price_juice_per_mana',
+def generic_uniform_with_initial(state_var: str, param_initial_value: str):
+    def p_oracle(params: dict, _2, _3, state: dict) -> dict:
+    
+        if state['timestep'] <= 1:
+            value = params[param_initial_value]
+        else:
+            relative_change = uniform(-params['MAXIMUM_UPDATE_PERCENTAGE_C'], params['MAXIMUM_UPDATE_PERCENTAGE_C'])
+            value = state[state_var] * (1 + relative_change)
+        
+        return {state_var: value}
+    return p_oracle
+
+
+p_oracle_juice_per_wei = generic_oracle(
+    'market_price_juice_per_wei',
+    'oracle_price_juice_per_wei',
+    'update_time_oracle_price_juice_per_wei',
     'MAXIMUM_UPDATE_PERCENTAGE_C')
 
 p_oracle_l1_gas = generic_oracle(
@@ -355,16 +368,8 @@ p_oracle_l1_blobgas = generic_oracle(
     'oracle_price_l1_blobgas',
     'update_time_oracle_price_l1_blobgas')
 
+p_oracle_proving_cost = generic_uniform_with_initial('oracle_proving_cost', 'PROVING_COST_INITIAL_C')
 
-def p_oracle_proving_cost(params: ModelParams, _2, _3, state: ModelState) -> dict:
-
-    modifier = state['oracle_proving_cost'] * (1 + params['PROVING_COST_MODIFICATION_E'])
-
-    value = proving_cost_fn(params['MINIMUM_PROVING_COST'],
-                                 modifier,
-                                 params['UPDATE_FRACTION_PROVING_COST'])
-    
-    return {'oracle_proving_cost': value}
 
 
 
@@ -395,7 +400,7 @@ def generic_gaussian_noise(var, mu_param, std_param, do_round=True):
     return s_random_walk
 
 
-s_market_price_juice_per_mana = generic_gaussian_noise('market_price_juice_per_mana', 'JUICE_PER_MANA_MEAN', 'JUICE_PER_MANA_STD', False)
+s_market_price_juice_per_wei = generic_gaussian_noise('market_price_juice_per_wei', 'JUICE_PER_WEI_MEAN', 'JUICE_PER_WEI_STD', False)
 s_market_price_l1_gas = generic_random_walk('market_price_l1_gas', 0, 1, True)
 s_market_price_l1_blobgas = generic_random_walk(
     'market_price_l1_blobgas', 0, 1, True)
