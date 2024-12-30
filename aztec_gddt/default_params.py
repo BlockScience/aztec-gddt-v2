@@ -93,7 +93,7 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              POINT_EVALUATION_PRECOMIPLE_GAS=50_000,
 
                              MINIMUM_MULTIPLIER_CONGESTION=1.0,  # fixed
-                             MINIMUM_PROVING_COST=1.0,  # fixed 
+                             MINIMUM_PROVING_COST=1.0,  # fixed
                              MINIMUM_FEE_JUICE_PER_WEI=1.0,  # fixed
 
                              UPDATE_FRACTION_CONGESTION=2_000_000,  # TODO
@@ -125,5 +125,9 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              FEE_JUICE_PRICE_MODIFICATION_E=0.1,
                              ORACLE_UPDATE_FREQUENCY_E=0.5,
                              JUICE_PER_MANA_MEAN=5.0,
-                             JUICE_PER_MANA_STD=2.0
+                             JUICE_PER_MANA_STD=2.0,
+                             
+                             # Misc
+                             PROVING_COST_MODIFIER_INITIAL_C=5.0,
+                             FEE_JUICE_PRICE_MODIFIER_INITIAL_C=5.0,
                              )

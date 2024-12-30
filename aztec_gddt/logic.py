@@ -4,7 +4,7 @@ from random import sample, random, uniform, normalvariate
 import numpy as np
 import scipy.stats as st
 from aztec_gddt.types import Slot
-from aztec_gddt.mechanism_functions import block_reward, compute_base_fee, expected_profit_per_tx, target_mana_per_block
+from aztec_gddt.mechanism_functions import block_reward, compute_base_fee, expected_profit_per_tx, target_mana_per_block, proving_cost_fn
 import math
 
 
@@ -312,7 +312,7 @@ def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, sign
 
 
 def generic_oracle(var_real, var_oracle, var_update_time, max_param=''):
-    def p_oracle_update(params: ModelParams, _2, _3, state: dict) -> dict:
+    def p_oracle_update(params: dict, _2, _3, state: dict) -> dict:
 
 
         now = state['l1_blocks_passed']
@@ -356,6 +356,18 @@ p_oracle_l1_blobgas = generic_oracle(
     'update_time_oracle_price_l1_blobgas')
 
 
+def p_oracle_proving_cost(params: ModelParams, _2, _3, state: ModelState) -> dict:
+
+    modifier = state['oracle_proving_cost'] * (1 + params['PROVING_COST_MODIFICATION_E'])
+
+    value = proving_cost_fn(params['MINIMUM_PROVING_COST'],
+                                 modifier,
+                                 params['UPDATE_FRACTION_PROVING_COST'])
+    
+    return {'oracle_proving_cost': value}
+
+
+
 def generic_random_walk(var, mu, std, do_round=True):
     def s_random_walk(params: ModelParams, _2, _3, state: dict, signal) -> tuple:
 
@@ -371,13 +383,13 @@ def generic_random_walk(var, mu, std, do_round=True):
 
 
 def generic_gaussian_noise(var, mu_param, std_param, do_round=True):
-    def s_random_walk(params: ModelParams, _2, _3, state: dict, signal) -> tuple:
+    def s_random_walk(params, _2, _3, state: dict, signal) -> tuple:
 
         raw_value = max(normalvariate(params[mu_param], params[std_param]), 0)
         if do_round:
-            value = round(raw_value)
+            value = round(raw_value) # type: ignore
         else:
-            value = raw_value
+            value = raw_value # type: ignore
 
         return (var, value)
     return s_random_walk

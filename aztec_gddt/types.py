@@ -186,3 +186,7 @@ class ModelParams(TypedDict):
     JUICE_PER_MANA_MEAN: JuicePerMana
     JUICE_PER_MANA_STD: JuicePerMana
 
+    # Misc
+    PROVING_COST_MODIFIER_INITIAL_C: WeiPerMana
+    FEE_JUICE_PRICE_MODIFIER_INITIAL_C: WeiPerMana
+

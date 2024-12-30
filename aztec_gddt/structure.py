@@ -31,7 +31,8 @@ RAW_MODEL_BLOCKS: list[dict] = [
         'policies': {
             'juice_per_mana': p_oracle_juice_per_mana,
             'l1_gas': p_oracle_l1_gas,
-            'l1_blobgas': p_oracle_l1_blobgas
+            'l1_blobgas': p_oracle_l1_blobgas,
+            'proving_cost': p_oracle_proving_cost
 
         },
         'variables': {
@@ -41,6 +42,8 @@ RAW_MODEL_BLOCKS: list[dict] = [
             'update_time_oracle_price_juice_per_mana': replace_suf,
             'update_time_oracle_price_l1_gas': replace_suf,
             'update_time_oracle_price_l1_blobgas': replace_suf,
+            'oracle_proving_cost': replace_suf
+
         }
     },
     {

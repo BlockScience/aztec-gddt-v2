@@ -5,7 +5,7 @@ from aztec_gddt.utils import policy_aggregator
 from copy import deepcopy
 from cadCAD.configuration import Experiment  # type: ignore
 from cadCAD.configuration.utils import config_sim  # type: ignore
-from cadCAD.tools.preparation import sweep_cartesian_product
+from cadCAD.tools.preparation import sweep_cartesian_product # type: ignore
 from random import sample
 
 
