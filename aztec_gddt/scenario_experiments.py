@@ -9,8 +9,8 @@ from cadCAD.tools.preparation import sweep_cartesian_product
 from random import sample
 
 
-def scenario_group_1_experiment(N_timesteps: int, 
-                                N_samples: int,
+def scenario_group_1_experiment(N_timesteps: int = 1_000, 
+                                N_samples: int = 2,
                                 N_config_sample: float = 30) -> Experiment:
 
     control_params_to_sweep: dict = {
