@@ -1,4 +1,5 @@
 from aztec_gddt.experiment import test_run
+from aztec_gddt.scenario_experiments import *
 from datetime import datetime
 import click
 import logging
@@ -66,6 +67,7 @@ def main(process: bool,
     logger.setLevel(log_levels[log_level])
 
     timestamp = datetime.now().strftime("%Y-%m-%dT%H%M%SZ%z")
+
 
     test_run()
 

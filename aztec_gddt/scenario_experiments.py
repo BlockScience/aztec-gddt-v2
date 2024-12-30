@@ -1,38 +1,55 @@
 from aztec_gddt.types import *
 from aztec_gddt.default_params import *
+from aztec_gddt.structure import MODEL_BLOCKS
+from aztec_gddt.utils import policy_aggregator
 from copy import deepcopy
+from cadCAD.configuration import Experiment  # type: ignore
+from cadCAD.configuration.utils import config_sim  # type: ignore
+from cadCAD.tools.preparation import sweep_cartesian_product
+from random import sample
 
 
-def scenario_group_1_experiment() -> None:
+def scenario_group_1_experiment(N_timesteps: int, 
+                                N_samples: int,
+                                N_config_sample: float = 30) -> Experiment:
 
-    params_to_sweep: dict = {
-        'general': {
-            'OVERHEAD_MANA_PER_TX': [1_000, 10_000, 20_000, 50_000],
-            'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000]
-        },
-        'fee': {
-            'RELATIVE_TARGET_MANA_PER_BLOCK': [0.1, 0.5, 0.9],
-            'MINIMUM_MULTIPLIER_CONGESTION': [1.0],
-            'MAX_RELATIVE_CHANGE_CONGESTION': [0.03],
-        },
-        'behavior': {
-            'PROVING_COST_MODIFICATION_E': [0.0, 0.1, -0.1],
-            'FEE_JUICE_PRICE_MODIFICATION_E': [0.0, 0.1, -0.1],
-            'ORACLE_UPDATE_FREQUENCY_E': [0.9, 0.1]
-        }
+    control_params_to_sweep: dict = {
+        'RELATIVE_TARGET_MANA_PER_BLOCK': [0.1, 0.5, 0.9],
+        'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000],
+        'MINIMUM_MULTIPLIER_CONGESTION': [1.0],
+        'UPDATE_FRACTION_CONGESTION': [20_000_000],
+        'OVERHEAD_MANA_PER_TX': [1_000, 10_000, 20_000, 50_000],
     }
 
-    initial_state_to_sweep: dict = {
-        'oracle_proving_cost': [0.0],  # TODO, PROVING_COST_MODIFIER_INITIAL_C
-        # TODO, FEE_JUICE_PRICE_MODIFIER_INITIAL_C
-        'oracle_price_juice_per_mana': [0.0]
+    env_params_to_sweep: dict = {
+        'MAX_RELATIVE_CHANGE_CONGESTION': [0.03],
+        'PROVING_COST_MODIFICATION_E': [0.0, 0.1, -0.1],
+        'FEE_JUICE_PRICE_MODIFICATION_E': [0.0, 0.1, -0.1],
+        'ORACLE_UPDATE_FREQUENCY_E': [0.9, 0.1]
     }
 
 
+    default_params = {k: [v] for k, v in DEFAULT_PARAMS.items()}
 
+    params_to_sweep = {**default_params, **
+                       env_params_to_sweep, **control_params_to_sweep}
+    
+    prepared_params = sweep_cartesian_product(params_to_sweep)
 
+    states_list = [DEFAULT_INITIAL_STATE, DEFAULT_INITIAL_STATE]
 
+    exp = Experiment()
+    for state in states_list:
+        simulation_parameters = {"N": N_samples, "T": range(N_timesteps), "M": prepared_params}
+        sim_config = config_sim(simulation_parameters)  # type: ignore
+        exp.append_configs(
+            sim_configs=sim_config,
+            initial_state=state,
+            partial_state_update_blocks=MODEL_BLOCKS,
+            policy_ops=[policy_aggregator],
+        )
 
+    if int(N_config_sample) > 0:
+        exp.configs = sample(exp.configs, int(N_config_sample))
 
-    initial_state = deepcopy(DEFAULT_INITIAL_STATE)
-    params = deepcopy(DEFAULT_PARAMS)
+    return exp
