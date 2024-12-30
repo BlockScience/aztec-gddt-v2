@@ -29,12 +29,18 @@ RAW_MODEL_BLOCKS: list[dict] = [
         'label': 'Oracles & Scoring Functions',
         'ignore': False,
         'policies': {
+            'juice_per_mana': p_oracle_juice_per_mana,
+            'l1_gas': p_oracle_l1_gas,
+            'l1_blobgas': p_oracle_l1_blobgas
 
         },
         'variables': {
-            'oracle_price_juice_per_mana': s_oracle_price_juice_per_mana,
-            'oracle_price_l1_gas': s_oracle_price_l1_gas,
-            'oracle_price_l1_blobgas': s_oracle_price_l1_blobgas
+            'oracle_price_juice_per_mana': replace_suf,
+            'oracle_price_l1_gas': replace_suf,
+            'oracle_price_l1_blobgas': replace_suf,
+            'update_time_oracle_price_juice_per_mana': replace_suf,
+            'update_time_oracle_price_l1_gas': replace_suf,
+            'update_time_oracle_price_l1_blobgas': replace_suf,
         }
     },
     {

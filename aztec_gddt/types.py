@@ -93,15 +93,21 @@ class ModelState(TypedDict):
     last_reward_time_in_l1: BlocksL1
 
     # Market & Oracle Values
-    market_price_juice_per_mana: JuicePerMana # TODO
-    market_price_l1_gas: WeiPerGas # TODO
-    market_price_l1_blobgas: WeiPerGas # TODO
-    oracle_price_juice_per_mana: JuicePerMana # TODO
-    oracle_price_l1_gas: WeiPerGas # TODO
-    oracle_price_l1_blobgas: WeiPerGas # TODO
-    oracle_proving_cost: WeiPerMana # TODO
-    congestion_multiplier: float # TODO
-    excess_mana: Mana # TODO
+    market_price_juice_per_mana: JuicePerMana
+    market_price_l1_gas: WeiPerGas
+    market_price_l1_blobgas: WeiPerGas
+
+    oracle_price_juice_per_mana: JuicePerMana
+    oracle_price_l1_gas: WeiPerGas
+    oracle_price_l1_blobgas: WeiPerGas
+
+    update_time_oracle_price_juice_per_mana: BlocksL1
+    update_time_oracle_price_l1_gas: BlocksL1
+    update_time_oracle_price_l1_blobgas: BlocksL1
+
+    oracle_proving_cost: WeiPerMana
+    congestion_multiplier: float 
+    excess_mana: Mana 
 
     # State Metrics
     base_fee: JuicePerMana
@@ -126,7 +132,7 @@ class GeneralParams():
     L2_SLOTS_PER_L2_EPOCH: BlocksL2 = 32 # fixed
     L1_SLOTS_PER_L2_SLOT: BlocksL1 = 3  # fixed
     PROVER_SEARCH_PERIOD: BlocksL2 = 13 # fixed
-    ORACLE_UPDATE_FREQUENCY_E: BlocksL1 = 5 # TODO
+    MIN_ORACLE_UPDATE_LAG_C: BlocksL1 = 5 # TODO
 
 @dataclass
 class FeeParams():
@@ -178,7 +184,6 @@ class SlashingParams():
 
 @dataclass
 class ProvingParams():
-    PROVING_COST_MODIFICATION_E: Percentage # env, sweep
     MAXIMUM_PROVING_COST_WEI_PER_MANA_PERCENT_CHANGE_PER_L2_SLOT: Percentage # control, sweep
     MAX_BASIS_POINT_FEE: Percentage = 0.9 # control, fixed
 
@@ -186,6 +191,9 @@ class ProvingParams():
 @dataclass
 class BehavioralParams():
     AVERAGE_TX_COUNT_PER_SLOT: int
+    PROVING_COST_MODIFICATION_E: Percentage # env, sweep
+    FEE_JUICE_PRICE_MODIFICATION_E: Percentage # env, sweep
+    ORACLE_UPDATE_FREQUENCY_E: Percentage # env, sweep
 
 
 class ModelParams(TypedDict):

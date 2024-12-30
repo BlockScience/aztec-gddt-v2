@@ -44,9 +44,15 @@ DEFAULT_INITIAL_STATE = ModelState(
     market_price_juice_per_mana = 5.0, # TODO
     market_price_l1_gas = 30, # TODO
     market_price_l1_blobgas = 5, # TODO
+
     oracle_price_juice_per_mana = 4.0, # TODO
     oracle_price_l1_gas = 28, # TODO
     oracle_price_l1_blobgas = 4, # TODO
+
+    update_time_oracle_price_juice_per_mana=-999,
+    update_time_oracle_price_l1_gas=-999,
+    update_time_oracle_price_l1_blobgas=-999,
+
     oracle_proving_cost = 0, # TODO
     congestion_multiplier = 1.0, # TODO
     excess_mana = 0, # TODO
@@ -87,7 +93,10 @@ stake_params = StakingParams()
 slash_params = SlashingParams(BOND_SIZE=DEFAULT_BOND_SIZE)
 
 
-behavioral_params = BehavioralParams(AVERAGE_TX_COUNT_PER_SLOT=360)
+behavioral_params = BehavioralParams(AVERAGE_TX_COUNT_PER_SLOT=360,
+                                     PROVING_COST_MODIFICATION_E=0.1,
+                                     FEE_JUICE_PRICE_MODIFICATION_E=0.1,
+                                     ORACLE_UPDATE_FREQUENCY_E=0.5)
 
 DEFAULT_PARAMS = ModelParams(label='default',
                              timestep_in_l1_blocks=1,

@@ -7,6 +7,7 @@ from aztec_gddt.types import Slot
 from aztec_gddt.mechanism_functions import block_reward, compute_base_fee, expected_profit_per_tx
 import math
 
+
 def p_evolve_time(params: ModelParams, _2, _3, _4):
     return {'delta_l1_blocks': params['timestep_in_l1_blocks']}
 
@@ -62,33 +63,31 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             # curr_slot.tx_total_mana = curr_slot.tx_count * \
             #     params['general'].OVERHEAD_MANA_PER_TX
             # HACK
-            
+
             # XXX: assume that base fee is computed when block is proposed
             # FIXME
-            max_fee_avg: JuicePerMana = (1 + params['fee'].MAX_FEE_INFLATION_PER_BLOCK) * base_fee
+            max_fee_avg: JuicePerMana = (
+                1 + params['fee'].MAX_FEE_INFLATION_PER_BLOCK) * base_fee
             base_fee = compute_base_fee(params, state)
 
-
-            max_fees = st.norm.rvs(loc=max_fee_avg, 
-                                    scale=max_fee_avg/2, # FIXME this is an arbitrary assumption
-                                    size=[total_tx])
-            
+            max_fees = st.norm.rvs(loc=max_fee_avg,
+                                   scale=max_fee_avg/2,  # FIXME this is an arbitrary assumption
+                                   size=[total_tx])
 
             inds_valid_due_to_max_above_base = max_fees > base_fee
-            inds_valid_due_to_profitability = expected_profit_per_tx(params, state, max_fees, 0.00, total_tx) > 0
+            inds_valid_due_to_profitability = expected_profit_per_tx(
+                params, state, max_fees, 0.00, total_tx) > 0
 
             inds = inds_valid_due_to_max_above_base & inds_valid_due_to_profitability
-            
-            dropped_tx = total_tx - np.sum(inds) # type: ignore
 
+            dropped_tx = total_tx - np.sum(inds)  # type: ignore
 
-            raw_total_mana = total_tx *  params['general'].OVERHEAD_MANA_PER_TX
+            raw_total_mana = total_tx * params['general'].OVERHEAD_MANA_PER_TX
             raw_total_fee = raw_total_mana * base_fee
-            
-            excl_tx = 0
-            curr_slot.tx_total_mana = (total_tx - excl_tx - dropped_tx) * params['general'].OVERHEAD_MANA_PER_TX
 
-            
+            excl_tx = 0
+            curr_slot.tx_total_mana = (
+                total_tx - excl_tx - dropped_tx) * params['general'].OVERHEAD_MANA_PER_TX
 
             # NOTE possibly add skipped / excluded txs somewhere here
     else:
@@ -96,13 +95,10 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
         # then check whatever there's still
         # space-time on the epoch
 
-
-
         # Compute excess mana during this block
         spent = curr_slot.tx_total_mana
         excess = max(excess + spent - params['fee'].TARGET_MANA_PER_BLOCK, 0)
         l2_blocks_passed += 1
-
 
         l1_blocks_since_epoch_init = state['l1_blocks_passed'] - \
             epoch.init_time_in_l1
@@ -130,9 +126,9 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             # NOTE: slot is created here
             new_slot = Slot(state['l1_blocks_passed'],
                             proposer,
-                            time_until_E_BLOCK_PROPOSE=t1,
-                            time_until_E_BLOCK_VALIDATE=t1 + t2,
-                            time_until_E_BLOCK_SENT=t1 + t2 + t3)
+                            time_until_E_BLOCK_PROPOSE=int(t1),
+                            time_until_E_BLOCK_VALIDATE=int(t1 + t2),
+                            time_until_E_BLOCK_SENT=int(t1 + t2 + t3))
 
             epoch.slots.append(new_slot)
         else:
@@ -157,9 +153,9 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             # NOTE: slot is created here
             new_slot = Slot(state['l1_blocks_passed'],
                             proposer,
-                            time_until_E_BLOCK_PROPOSE=t1,
-                            time_until_E_BLOCK_VALIDATE=t1 + t2,
-                            time_until_E_BLOCK_SENT=t1 + t2 + t3)
+                            time_until_E_BLOCK_PROPOSE=int(t1),
+                            time_until_E_BLOCK_VALIDATE=int(t1 + t2),
+                            time_until_E_BLOCK_SENT=int(t1 + t2 + t3))
 
             t4 = st.geom.rvs(0.25)
             t5 = st.geom.rvs(0.15)
@@ -168,8 +164,8 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             epoch = Epoch(init_time_in_l1=state['l1_blocks_passed'],
                           validators=validator_committee_ids,
                           slots=[new_slot],
-                          time_until_E_EPOCH_QUOTE_ACCEPT=t4,
-                          time_until_E_EPOCH_FINISH=t5 + t4)
+                          time_until_E_EPOCH_QUOTE_ACCEPT=int(t4),
+                          time_until_E_EPOCH_FINISH=int(t4 + t5))
 
     return {'current_epoch': epoch,
             'last_epoch': last_epoch,
@@ -195,7 +191,6 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
     delta_cumm_mana = 0
     delta_finalized_blocks = 0
 
-
     # Ignore resolved epochs (eg. finalized or reorged)
     if epoch.finalized or epoch.reorged:
         pass
@@ -219,14 +214,16 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     drift_decay_rate=params['reward'].BLOCK_REWARD_DRIFT_DECAY_RATE,
                     volatility_coefficient=params['reward'].BLOCK_REWARD_VOLATILITY,
                     volatility_decay_rate=params['reward'].BLOCK_REWARD_DRIFT_DECAY_RATE)
-                
+
                 last_reward_time = epoch.finalized_time_in_l1
 
                 delta_resolved_epochs += 1
-                delta_finalized_epochs +=1
+                delta_finalized_epochs += 1
                 delta_cumm_mana += sum(s.tx_total_mana for s in epoch.slots)
-                delta_finalized_blocks += len([s for s in epoch.slots if s.has_block_header_on_l1])
-                delta_empty_blocks += len([s for s in epoch.slots if not s.has_block_header_on_l1])
+                delta_finalized_blocks += len(
+                    [s for s in epoch.slots if s.has_block_header_on_l1])
+                delta_empty_blocks += len(
+                    [s for s in epoch.slots if not s.has_block_header_on_l1])
                 agents = deepcopy(agents)
                 for a in agents:
                     a.score = random()
@@ -265,7 +262,7 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     if len(epoch.prover_quotes) > 0:
                         # Select highest scoring admissible quote
                         prover = min(epoch.prover_quotes,
-                                    key=epoch.prover_quotes.get)  # type: ignore
+                                     key=epoch.prover_quotes.get)  # type: ignore
                         epoch.accepted_prover = prover
                         epoch.accepted_prover_quote = epoch.prover_quotes[prover]
                     else:
@@ -295,14 +292,17 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
             }
 
 
-
 def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, signal) -> tuple:
 
-    upper_multiplier = state['congestion_multiplier'] * (1 + params['fee'].MAX_RELATIVE_CHANGE_CONGESTION)
+    upper_multiplier = state['congestion_multiplier'] * \
+        (1 + params['fee'].MAX_RELATIVE_CHANGE_CONGESTION)
 
-    lower_multiplier = state['congestion_multiplier'] * (1 - params['fee'].MAX_RELATIVE_CHANGE_CONGESTION)
+    lower_multiplier = state['congestion_multiplier'] * \
+        (1 - params['fee'].MAX_RELATIVE_CHANGE_CONGESTION)
 
-    multiplier = params['fee'].MINIMUM_MULTIPLIER_CONGESTION * math.exp(state['excess_mana'] / params['fee'].UPDATE_FRACTION_CONGESTION)
+    multiplier = params['fee'].MINIMUM_MULTIPLIER_CONGESTION * \
+        math.exp(state['excess_mana'] /
+                 params['fee'].UPDATE_FRACTION_CONGESTION)
 
     if multiplier > upper_multiplier:
         multiplier = upper_multiplier
@@ -312,26 +312,39 @@ def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, sign
     return ('congestion_multiplier', multiplier)
 
 
+def generic_oracle(var_real, var_oracle, var_update_time):
+    def p_oracle_update(params: ModelParams, _2, _3, state: dict) -> dict:
 
 
-def generic_oracle(var_real, var_oracle):
-    def s_oracle_update(params: ModelParams, _2, _3, state: dict, signal) -> tuple:
+        now = state['l1_blocks_passed']
+        value = state[var_oracle]
+        update_time = state[var_update_time]
 
-        value = state[var_oracle] 
+        if now > (update_time + params['general'].MIN_ORACLE_UPDATE_LAG_C):
+            do_update = random(
+            ) < params['behavior'].ORACLE_UPDATE_FREQUENCY_E
+            if do_update:
+                value = state[var_real]
+                update_time = now
 
-        # TODO: check if this is expected
-        if (state['l1_blocks_passed'] % params['general'].
-        ORACLE_UPDATE_FREQUENCY_E) == 0:
-            value = state[var_real]
+        return {var_oracle: value, var_update_time: update_time}
+    return p_oracle_update
 
-        return (var_oracle, value)
-    return s_oracle_update
 
-s_oracle_price_juice_per_mana = generic_oracle('market_price_juice_per_mana', 'oracle_price_juice_per_mana')
+p_oracle_juice_per_mana = generic_oracle(
+    'market_price_juice_per_mana',
+    'oracle_price_juice_per_mana',
+    'update_time_oracle_price_juice_per_mana')
 
-s_oracle_price_l1_gas = generic_oracle('market_price_l1_gas', 'oracle_price_l1_gas')
+p_oracle_l1_gas = generic_oracle(
+    'market_price_l1_gas',
+    'oracle_price_l1_gas',
+    'update_time_oracle_price_l1_gas')
 
-s_oracle_price_l1_blobgas = generic_oracle('market_price_l1_blobgas', 'oracle_price_l1_blobgas')
+p_oracle_l1_blobgas = generic_oracle(
+    'market_price_l1_blobgas',
+    'oracle_price_l1_blobgas',
+    'update_time_oracle_price_l1_blobgas')
 
 
 def generic_random_walk(var, mu, std, do_round=True):
@@ -342,14 +355,17 @@ def generic_random_walk(var, mu, std, do_round=True):
             value = round(raw_value)
         else:
             value = raw_value
-        
+
         return (var, value)
     return s_random_walk
 
 
-s_market_price_juice_per_mana = generic_random_walk('market_price_juice_per_mana', 0, 1, False)
+s_market_price_juice_per_mana = generic_random_walk(
+    'market_price_juice_per_mana', 0, 1, False)
 s_market_price_l1_gas = generic_random_walk('market_price_l1_gas', 0, 1, True)
-s_market_price_l1_blobgas = generic_random_walk('market_price_l1_blobgas', 0, 1, True)
+s_market_price_l1_blobgas = generic_random_walk(
+    'market_price_l1_blobgas', 0, 1, True)
+
 
 def replace_suf(variable: str, default_value=0.0):
     """Creates replacing function for state update from string
@@ -380,4 +396,3 @@ def add_suf(variable: str, default_value=0.0):
         variable,
         signal.get(variable, default_value) + state[variable],
     )
-
