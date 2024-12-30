@@ -101,8 +101,7 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              UPDATE_FRACTION_FEE_JUICE_PER_WEI=1.0,  # TODO
 
                              MAX_RELATIVE_CHANGE_CONGESTION=0.03,  # TODO
-                             MAX_RELATIVE_CHANGE_PROVING_COST=0.03,  # TODO
-                             MAX_RELATIVE_CHANGE_FEE_JUICE_PER_WEI=0.03,  # TODO
+                             MAXIMUM_UPDATE_PERCENTAGE_C=0.03,
 
                              MAX_FEE_INFLATION_PER_BLOCK=0.10,  # TODO
 
@@ -124,5 +123,7 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              AVERAGE_TX_COUNT_PER_SLOT=360,
                              PROVING_COST_MODIFICATION_E=0.1,
                              FEE_JUICE_PRICE_MODIFICATION_E=0.1,
-                             ORACLE_UPDATE_FREQUENCY_E=0.5
+                             ORACLE_UPDATE_FREQUENCY_E=0.5,
+                             JUICE_PER_MANA_MEAN=5.0,
+                             JUICE_PER_MANA_STD=2.0
                              )

@@ -311,7 +311,7 @@ def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, sign
     return ('congestion_multiplier', multiplier)
 
 
-def generic_oracle(var_real, var_oracle, var_update_time):
+def generic_oracle(var_real, var_oracle, var_update_time, max_param=''):
     def p_oracle_update(params: ModelParams, _2, _3, state: dict) -> dict:
 
 
@@ -323,7 +323,16 @@ def generic_oracle(var_real, var_oracle, var_update_time):
             do_update = random(
             ) < params['ORACLE_UPDATE_FREQUENCY_E']
             if do_update:
-                value = state[var_real]
+                if max_param == '':
+                    value = state[var_real]
+                else:
+                    if state[var_real] > value * (1 + params[max_param]):
+                        value = value * (1 + params[max_param])
+                    elif state[var_real] < value * (1 - params[max_param]):
+                        value = value * (1 - params[max_param])
+                    else:
+                        value = state[var_real]
+
                 update_time = now
 
         return {var_oracle: value, var_update_time: update_time}
@@ -333,7 +342,8 @@ def generic_oracle(var_real, var_oracle, var_update_time):
 p_oracle_juice_per_mana = generic_oracle(
     'market_price_juice_per_mana',
     'oracle_price_juice_per_mana',
-    'update_time_oracle_price_juice_per_mana')
+    'update_time_oracle_price_juice_per_mana',
+    'MAXIMUM_UPDATE_PERCENTAGE_C')
 
 p_oracle_l1_gas = generic_oracle(
     'market_price_l1_gas',
@@ -359,8 +369,21 @@ def generic_random_walk(var, mu, std, do_round=True):
     return s_random_walk
 
 
-s_market_price_juice_per_mana = generic_random_walk(
-    'market_price_juice_per_mana', 0, 1, False)
+
+def generic_gaussian_noise(var, mu_param, std_param, do_round=True):
+    def s_random_walk(params: ModelParams, _2, _3, state: dict, signal) -> tuple:
+
+        raw_value = max(normalvariate(params[mu_param], params[std_param]), 0)
+        if do_round:
+            value = round(raw_value)
+        else:
+            value = raw_value
+
+        return (var, value)
+    return s_random_walk
+
+
+s_market_price_juice_per_mana = generic_gaussian_noise('market_price_juice_per_mana', 'JUICE_PER_MANA_MEAN', 'JUICE_PER_MANA_STD', False)
 s_market_price_l1_gas = generic_random_walk('market_price_l1_gas', 0, 1, True)
 s_market_price_l1_blobgas = generic_random_walk(
     'market_price_l1_blobgas', 0, 1, True)

@@ -161,8 +161,7 @@ class ModelParams(TypedDict):
     UPDATE_FRACTION_FEE_JUICE_PER_WEI: float
 
     MAX_RELATIVE_CHANGE_CONGESTION: Percentage
-    MAX_RELATIVE_CHANGE_PROVING_COST: Percentage
-    MAX_RELATIVE_CHANGE_FEE_JUICE_PER_WEI: Percentage
+    MAXIMUM_UPDATE_PERCENTAGE_C: Percentage
 
     MAX_FEE_INFLATION_PER_BLOCK: Percentage
 
@@ -184,4 +183,6 @@ class ModelParams(TypedDict):
     PROVING_COST_MODIFICATION_E: Percentage  # env, sweep
     FEE_JUICE_PRICE_MODIFICATION_E: Percentage  # env, sweep
     ORACLE_UPDATE_FREQUENCY_E: Percentage  # env, sweep
+    JUICE_PER_MANA_MEAN: JuicePerMana
+    JUICE_PER_MANA_STD: JuicePerMana
 
