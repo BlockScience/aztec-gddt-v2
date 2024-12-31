@@ -94,7 +94,6 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              UPDATE_FRACTION_CONGESTION=2_000_000,  # TODO
                              MAX_RELATIVE_CHANGE_CONGESTION=0.03,  # TODO
                              MAXIMUM_UPDATE_PERCENTAGE_C=0.03,
-                             MAX_FEE_INFLATION_PER_BLOCK=0.10,  # TODO
                              PROVING_COST_INITIAL_C=100.0,
                              FEE_JUICE_PRICE_INITIAL_C=5.0,
 
@@ -119,4 +118,7 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              ORACLE_UPDATE_FREQUENCY_E=0.5,
                              JUICE_PER_WEI_MEAN=5.0,
                              JUICE_PER_WEI_STD=2.0,
+                             MAX_FEE_INFLATION_PER_BLOCK=0.10,  # TODO
+                             MAX_FEE_INFLATION_RELATIVE_MEAN=0.5,
+                             MAX_FEE_INFLATION_RELATIVE_STD=0.3,
                              )

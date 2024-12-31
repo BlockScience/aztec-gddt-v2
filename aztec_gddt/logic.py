@@ -66,12 +66,20 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
             # XXX: assume that base fee is computed when block is proposed
             # FIXME
-            max_fee_avg: JuicePerMana = (
+
+            max_fee: JuicePerMana = (
                 1 + params['MAX_FEE_INFLATION_PER_BLOCK']) * base_fee
+            
+            max_fee_avg = (
+                1 + params['MAX_FEE_INFLATION_PER_BLOCK'] * params['MAX_FEE_INFLATION_RELATIVE_MEAN']) * base_fee
+            
+            max_fee_std = params['MAX_FEE_INFLATION_RELATIVE_STD'] * max_fee
+
             base_fee = compute_base_fee(params, state)
 
+            
             max_fees = st.norm.rvs(loc=max_fee_avg,
-                                   scale=max_fee_avg/2,  # FIXME this is an arbitrary assumption
+                                   scale=max_fee_std, 
                                    size=[total_tx])
 
             inds_valid_due_to_max_above_base = max_fees > base_fee
