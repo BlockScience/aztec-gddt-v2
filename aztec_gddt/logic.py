@@ -4,7 +4,7 @@ from random import sample, random, uniform, normalvariate
 import numpy as np
 import scipy.stats as st
 from aztec_gddt.types import Slot
-from aztec_gddt.mechanism_functions import block_reward, compute_base_fee, expected_profit_per_tx, target_mana_per_block
+from aztec_gddt.mechanism_functions import block_reward, compute_base_fee, expected_profit_per_tx, target_mana_per_block, proving_cost_fn
 import math
 
 
@@ -66,12 +66,20 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
 
             # XXX: assume that base fee is computed when block is proposed
             # FIXME
-            max_fee_avg: JuicePerMana = (
+
+            max_fee: JuicePerMana = (
                 1 + params['MAX_FEE_INFLATION_PER_BLOCK']) * base_fee
+            
+            max_fee_avg = (
+                1 + params['MAX_FEE_INFLATION_PER_BLOCK'] * params['MAX_FEE_INFLATION_RELATIVE_MEAN']) * base_fee
+            
+            max_fee_std = params['MAX_FEE_INFLATION_RELATIVE_STD'] * max_fee
+
             base_fee = compute_base_fee(params, state)
 
+            
             max_fees = st.norm.rvs(loc=max_fee_avg,
-                                   scale=max_fee_avg/2,  # FIXME this is an arbitrary assumption
+                                   scale=max_fee_std, 
                                    size=[total_tx])
 
             inds_valid_due_to_max_above_base = max_fees > base_fee
@@ -311,8 +319,8 @@ def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, sign
     return ('congestion_multiplier', multiplier)
 
 
-def generic_oracle(var_real, var_oracle, var_update_time):
-    def p_oracle_update(params: ModelParams, _2, _3, state: dict) -> dict:
+def generic_oracle(var_real, var_oracle, var_update_time, max_param=''):
+    def p_oracle_update(params: dict, _2, _3, state: dict) -> dict:
 
 
         now = state['l1_blocks_passed']
@@ -323,17 +331,40 @@ def generic_oracle(var_real, var_oracle, var_update_time):
             do_update = random(
             ) < params['ORACLE_UPDATE_FREQUENCY_E']
             if do_update:
-                value = state[var_real]
+                if max_param == '':
+                    value = state[var_real]
+                else:
+                    if state[var_real] > value * (1 + params[max_param]):
+                        value = value * (1 + params[max_param])
+                    elif state[var_real] < value * (1 - params[max_param]):
+                        value = value * (1 - params[max_param])
+                    else:
+                        value = state[var_real]
+
                 update_time = now
 
         return {var_oracle: value, var_update_time: update_time}
     return p_oracle_update
 
 
-p_oracle_juice_per_mana = generic_oracle(
-    'market_price_juice_per_mana',
-    'oracle_price_juice_per_mana',
-    'update_time_oracle_price_juice_per_mana')
+def generic_uniform_with_initial(state_var: str, param_initial_value: str):
+    def p_oracle(params: dict, _2, _3, state: dict) -> dict:
+    
+        if state['timestep'] <= 1:
+            value = params[param_initial_value]
+        else:
+            relative_change = uniform(-params['MAXIMUM_UPDATE_PERCENTAGE_C'], params['MAXIMUM_UPDATE_PERCENTAGE_C'])
+            value = state[state_var] * (1 + relative_change)
+        
+        return {state_var: value}
+    return p_oracle
+
+
+p_oracle_juice_per_wei = generic_oracle(
+    'market_price_juice_per_wei',
+    'oracle_price_juice_per_wei',
+    'update_time_oracle_price_juice_per_wei',
+    'MAXIMUM_UPDATE_PERCENTAGE_C')
 
 p_oracle_l1_gas = generic_oracle(
     'market_price_l1_gas',
@@ -344,6 +375,10 @@ p_oracle_l1_blobgas = generic_oracle(
     'market_price_l1_blobgas',
     'oracle_price_l1_blobgas',
     'update_time_oracle_price_l1_blobgas')
+
+p_oracle_proving_cost = generic_uniform_with_initial('oracle_proving_cost', 'PROVING_COST_INITIAL_C')
+
+
 
 
 def generic_random_walk(var, mu, std, do_round=True):
@@ -359,8 +394,21 @@ def generic_random_walk(var, mu, std, do_round=True):
     return s_random_walk
 
 
-s_market_price_juice_per_mana = generic_random_walk(
-    'market_price_juice_per_mana', 0, 1, False)
+
+def generic_gaussian_noise(var, mu_param, std_param, do_round=True):
+    def s_random_walk(params, _2, _3, state: dict, signal) -> tuple:
+
+        raw_value = max(normalvariate(params[mu_param], params[std_param]), 0)
+        if do_round:
+            value = round(raw_value) # type: ignore
+        else:
+            value = raw_value # type: ignore
+
+        return (var, value)
+    return s_random_walk
+
+
+s_market_price_juice_per_wei = generic_gaussian_noise('market_price_juice_per_wei', 'JUICE_PER_WEI_MEAN', 'JUICE_PER_WEI_STD', False)
 s_market_price_l1_gas = generic_random_walk('market_price_l1_gas', 0, 1, True)
 s_market_price_l1_blobgas = generic_random_walk(
     'market_price_l1_blobgas', 0, 1, True)

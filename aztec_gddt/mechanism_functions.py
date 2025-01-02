@@ -184,7 +184,7 @@ def compute_base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
         params['L1_GAS_TO_VERIFY'] / params['L2_SLOTS_PER_L2_EPOCH'])
     l1_blobgas_per_block: Gas = params['L1_BLOBGAS_PER_BLOB'] * \
         params['BLOBS_PER_BLOCK']
-    juice_per_wei_price = state['oracle_price_juice_per_mana']
+    juice_per_wei_price = state['oracle_price_juice_per_wei']
     proving_cost_per_mana_in_wei = state['oracle_proving_cost']
     congestion_multiplier = state['congestion_multiplier']
 
@@ -213,7 +213,7 @@ def l2_block_cost_for_sequencer(params: ModelParams, state: ModelState) -> Juice
         params['L1_GAS_TO_VERIFY'] / params['L2_SLOTS_PER_L2_EPOCH'])
     l1_blobgas_per_block: Gas = params['L1_BLOBGAS_PER_BLOB'] * \
         params['BLOBS_PER_BLOCK']
-    juice_per_wei_price = state['market_price_juice_per_mana']
+    juice_per_wei_price = state['market_price_juice_per_wei']
     proving_cost_per_mana_in_wei = 0.0
     congestion_multiplier = 1.0
 

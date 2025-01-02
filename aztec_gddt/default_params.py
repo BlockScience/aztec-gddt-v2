@@ -25,12 +25,12 @@ DEFAULT_LAST_EPOCH = invalid_epoch
 
 
 DEFAULT_INITIAL_STATE = ModelState(
+    timestep=0,
     l1_blocks_passed=0,
     delta_l1_blocks=0,
     l2_blocks_passed=0,
     agents=DEFAULT_INITIAL_AGENTS,
     validator_set=set(),
-    PROVING_COST_MODIFIER=0.0,
     current_epoch=DEFAULT_INITIAL_EPOCH,
     last_epoch=DEFAULT_LAST_EPOCH,
 
@@ -39,19 +39,19 @@ DEFAULT_INITIAL_STATE = ModelState(
     last_reward=15_000,  # XXX
 
     # Market & Oracle Values
-    market_price_juice_per_mana=5.0,  # TODO
+    market_price_juice_per_wei=5.0,  # TODO
     market_price_l1_gas=30,  # TODO
     market_price_l1_blobgas=5,  # TODO
 
-    oracle_price_juice_per_mana=4.0,  # TODO
+    oracle_price_juice_per_wei=4.0,  # TODO
     oracle_price_l1_gas=28,  # TODO
     oracle_price_l1_blobgas=4,  # TODO
 
-    update_time_oracle_price_juice_per_mana=-999,
+    update_time_oracle_price_juice_per_wei=-999,
     update_time_oracle_price_l1_gas=-999,
     update_time_oracle_price_l1_blobgas=-999,
 
-    oracle_proving_cost=0,  # TODO
+    oracle_proving_cost=float('nan'),  # TODO
     congestion_multiplier=1.0,  # TODO
     excess_mana=0,  # TODO
 
@@ -85,26 +85,17 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              ### Fee ###
                              RELATIVE_TARGET_MANA_PER_BLOCK=0.5,
                              BLOBS_PER_BLOCK=3,  # fixed
-
                              L1_GAS_TO_VERIFY=1_000_000,  # fixed
                              L2_SLOTS_PER_EPOCH=32,  # fixed
                              L1_GAS_TO_PUBLISH=150_000,  # fixed
                              L1_BLOBGAS_PER_BLOB=int(2 ** 17),  # fixed, ~131k
                              POINT_EVALUATION_PRECOMIPLE_GAS=50_000,
-
                              MINIMUM_MULTIPLIER_CONGESTION=1.0,  # fixed
-                             MINIMUM_PROVING_COST=1.0,  # fixed 
-                             MINIMUM_FEE_JUICE_PER_WEI=1.0,  # fixed
-
                              UPDATE_FRACTION_CONGESTION=2_000_000,  # TODO
-                             UPDATE_FRACTION_PROVING_COST=1.0,  # TODO
-                             UPDATE_FRACTION_FEE_JUICE_PER_WEI=1.0,  # TODO
-
                              MAX_RELATIVE_CHANGE_CONGESTION=0.03,  # TODO
-                             MAX_RELATIVE_CHANGE_PROVING_COST=0.03,  # TODO
-                             MAX_RELATIVE_CHANGE_FEE_JUICE_PER_WEI=0.03,  # TODO
-
-                             MAX_FEE_INFLATION_PER_BLOCK=0.10,  # TODO
+                             MAXIMUM_UPDATE_PERCENTAGE_C=0.03,
+                             PROVING_COST_INITIAL_C=100.0,
+                             FEE_JUICE_PRICE_INITIAL_C=5.0,
 
                              ### Reward ###
                              BLOCK_REWARD_VOLATILITY=3.17e-6,
@@ -122,7 +113,12 @@ DEFAULT_PARAMS = ModelParams(label='default',
 
                              ### Behavioural ###
                              AVERAGE_TX_COUNT_PER_SLOT=360,
-                             PROVING_COST_MODIFICATION_E=0.1,
-                             FEE_JUICE_PRICE_MODIFICATION_E=0.1,
-                             ORACLE_UPDATE_FREQUENCY_E=0.5
+                             PROVING_COST_MODIFICATION_E=0.005,
+                             FEE_JUICE_PRICE_MODIFICATION_E=0.001,
+                             ORACLE_UPDATE_FREQUENCY_E=0.5,
+                             JUICE_PER_WEI_MEAN=5.0,
+                             JUICE_PER_WEI_STD=2.0,
+                             MAX_FEE_INFLATION_PER_BLOCK=0.10,  # TODO
+                             MAX_FEE_INFLATION_RELATIVE_MEAN=0.5,
+                             MAX_FEE_INFLATION_RELATIVE_STD=0.3,
                              )
