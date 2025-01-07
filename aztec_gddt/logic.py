@@ -240,7 +240,6 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     # Reorg epoch and slash prover if time is over
                     epoch.reorged = True
 
-                    # TODO Maybe we need to check slots individually
                     delta_empty_blocks += len(epoch.slots)
                     delta_unproven_epochs += 1
                     delta_resolved_epochs += 1
@@ -278,7 +277,6 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
             else:
                 # Or if time for accepting a prover is over, reorg
                 epoch.reorged = True
-                # TODO Maybe we need to check slots individually
                 delta_empty_blocks += len(epoch.slots)
                 delta_unproven_epochs += 1
                 delta_resolved_epochs += 1
