@@ -9,9 +9,9 @@ from cadCAD.tools.preparation import sweep_cartesian_product # type: ignore
 from random import sample
 
 
-def scenario_group_1_experiment(N_timesteps: int = 1_000, 
+def scenario_group_1_experiment(N_timesteps: int = 100, 
                                 N_samples: int = 2,
-                                N_config_sample: float = 30) -> Experiment:
+                                N_config_sample: float = 300) -> Experiment:
 
     control_params_to_sweep: dict = {
         'RELATIVE_TARGET_MANA_PER_BLOCK': [0.1, 0.5, 0.9],
