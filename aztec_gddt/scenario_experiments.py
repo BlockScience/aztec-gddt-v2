@@ -14,11 +14,11 @@ def scenario_group_1_experiment(N_timesteps: int = 100,
                                 N_config_sample: float = 300) -> Experiment:
 
     control_params_to_sweep: dict = {
-        'RELATIVE_TARGET_MANA_PER_BLOCK': [0.1, 0.5, 0.9],
+        'RELATIVE_TARGET_MANA_PER_BLOCK': [0.5, 0.9],
         'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000],
-        'MINIMUM_MULTIPLIER_CONGESTION': [1.0],
-        'UPDATE_FRACTION_CONGESTION': [20_000_000],
-        'OVERHEAD_MANA_PER_TX': [1_000, 10_000, 20_000, 50_000],
+        'MINIMUM_MULTIPLIER_CONGESTION': [1.0, 10],
+        'RELATIVE_UPDATE_FRACTION_CONGESTION': [0.5, 1.0],
+        'OVERHEAD_MANA_PER_TX': [1_000, 10_000, 50_000],
         'PROVING_COST_MODIFIER_INITIAL_C': [10, 100, 1000],
         'FEE_JUICE_PRICE_MODIFIER_INITIAL_C': [1.0],
         'MAXIMUM_UPDATE_PERCENTAGE_C': [0.3]
@@ -62,7 +62,7 @@ def scenario_group_2_experiment(N_timesteps: int = 1_000,
                                 N_config_sample: float = 30) -> Experiment:
 
     control_params_to_sweep: dict = {
-        'MAX_FEE_INFLATION_PER_BLOCK': [0.0, 0.01, 0.1],
+        'MAX_FEE_INFLATION_RELATIVE_MEAN': [0.0, 0.5, 1.0, 2.0],
         'RELATIVE_TARGET_MANA_PER_BLOCK': [0.1, 0.5, 0.9],
         'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000],
         'MINIMUM_MULTIPLIER_CONGESTION': [1.0],

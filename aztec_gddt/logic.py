@@ -22,7 +22,7 @@ def s_delta_blocks(_1, _2, _3, _4, signal):
     return ('delta_l1_blocks', signal['delta_l1_blocks'])
 
 
-def p_epoch(params: ModelParams, _2, _3, state: ModelState):
+def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: ModelState):
     """
     Logic for the evolution over the epoch/slot state
     """
@@ -67,33 +67,42 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             # XXX: assume that base fee is computed when block is proposed
             # FIXME
 
+            
+            past_past_base_fee = history[-2][-1]['base_fee']
+            past_base_fee = history[-1][-1]['base_fee']
+
+            if ~np.isnan(past_past_base_fee):
+                inflation_estimate = (history[-1][-1]['base_fee'] / history[-2][-1]['base_fee']) - 1
+            else:
+                inflation_estimate = 1.0
+            
+
             max_fee: JuicePerMana = (
-                1 + params['MAX_FEE_INFLATION_PER_BLOCK']) * base_fee
-            
+                1 + inflation_estimate) * past_base_fee
+
             max_fee_avg = (
-                1 + params['MAX_FEE_INFLATION_PER_BLOCK'] * params['MAX_FEE_INFLATION_RELATIVE_MEAN']) * base_fee
-            
+                1 + inflation_estimate * params['MAX_FEE_INFLATION_RELATIVE_MEAN']) * past_base_fee
+
             max_fee_std = params['MAX_FEE_INFLATION_RELATIVE_STD'] * max_fee
 
-            base_fee = compute_base_fee(params, state)
-
-            
             max_fees = st.norm.rvs(loc=max_fee_avg,
-                                   scale=max_fee_std, 
+                                   scale=max_fee_std,
                                    size=[total_tx])
 
             inds_valid_due_to_max_above_base = max_fees > base_fee
+
             inds_valid_due_to_profitability = expected_profit_per_tx(
                 params, state, max_fees, 0.00, total_tx) > 0
+            
+            passively_excl_inds = np.bitwise_not(inds_valid_due_to_max_above_base)
+            actively_excl_inds = np.bitwise_not(inds_valid_due_to_profitability) & np.bitwise_not(passively_excl_inds)
 
-            inds = inds_valid_due_to_max_above_base & inds_valid_due_to_profitability
-
-            dropped_tx = total_tx - np.sum(inds)  # type: ignore
+            excl_tx = np.sum(passively_excl_inds)
+            dropped_tx = np.sum(actively_excl_inds)  # type: ignore
 
             raw_total_mana = total_tx * params['OVERHEAD_MANA_PER_TX']
             raw_total_fee = raw_total_mana * base_fee
 
-            excl_tx = 0
             curr_slot.tx_total_mana = (
                 total_tx - excl_tx - dropped_tx) * params['OVERHEAD_MANA_PER_TX']
 
@@ -151,7 +160,8 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             ordered_validator_set = sorted(validator_set,
                                            key=lambda x: x.score,
                                            reverse=True)
-            validator_committee = ordered_validator_set[:params['VALIDATOR_COMMITTEE_SIZE']]
+            validator_committee = ordered_validator_set[:
+                                                        params['VALIDATOR_COMMITTEE_SIZE']]
             validator_committee_ids = [a.uuid for a in validator_committee]
 
             # For each slot in the epoch a sequencer/block proposer is drawn (based on score) from the validator committee
@@ -180,8 +190,7 @@ def p_epoch(params: ModelParams, _2, _3, state: ModelState):
             'cumm_excl_tx': excl_tx,
             'cumm_total_tx': total_tx,
             'excess_mana': excess,
-            'l2_blocks_passed': l2_blocks_passed,
-            'base_fee': base_fee}
+            'l2_blocks_passed': l2_blocks_passed}
 
 
 def p_pending_epoch_proof(params: ModelParams, _2, _3,
@@ -305,9 +314,10 @@ def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, sign
     lower_multiplier = state['congestion_multiplier'] * \
         (1 - params['MAX_RELATIVE_CHANGE_CONGESTION'])
 
-    multiplier = params['MINIMUM_MULTIPLIER_CONGESTION'] * \
-        math.exp(state['excess_mana'] /
-                 params['UPDATE_FRACTION_CONGESTION'])
+    update_frac = params['RELATIVE_UPDATE_FRACTION_CONGESTION'] * \
+        params['MAXIMUM_MANA_PER_BLOCK']
+    multiplier = params['MINIMUM_MULTIPLIER_CONGESTION']
+    multiplier *= math.exp(state['excess_mana'] / update_frac)
 
     if multiplier > upper_multiplier:
         multiplier = upper_multiplier
@@ -320,26 +330,28 @@ def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, sign
 def generic_oracle(var_real, var_oracle, var_update_time, max_param=''):
     def p_oracle_update(params: dict, _2, _3, state: dict) -> dict:
 
-
         now = state['l1_blocks_passed']
         value = state[var_oracle]
         update_time = state[var_update_time]
 
-        if now > (update_time + params['MIN_ORACLE_UPDATE_LAG_C']):
-            do_update = random(
-            ) < params['ORACLE_UPDATE_FREQUENCY_E']
-            if do_update:
-                if max_param == '':
-                    value = state[var_real]
-                else:
-                    if state[var_real] > value * (1 + params[max_param]):
-                        value = value * (1 + params[max_param])
-                    elif state[var_real] < value * (1 - params[max_param]):
-                        value = value * (1 - params[max_param])
-                    else:
-                        value = state[var_real]
+        cond1 = now > (update_time + params['MIN_ORACLE_UPDATE_LAG_C'])
+        cond2 = random() < params['ORACLE_UPDATE_FREQUENCY_E']
+        cond3 = state['timestep'] <= 1
 
-                update_time = now
+        do_update = (cond1 & cond2) | cond3
+
+        if do_update:
+            if max_param == '':
+                value = state[var_real]
+            else:
+                if state[var_real] > value * (1 + params[max_param]):
+                    value = value * (1 + params[max_param])
+                elif state[var_real] < value * (1 - params[max_param]):
+                    value = value * (1 - params[max_param])
+                else:
+                    value = state[var_real]
+
+            update_time = now
 
         return {var_oracle: value, var_update_time: update_time}
     return p_oracle_update
@@ -347,15 +359,34 @@ def generic_oracle(var_real, var_oracle, var_update_time, max_param=''):
 
 def generic_uniform_with_initial(state_var: str, param_initial_value: str):
     def p_oracle(params: dict, _2, _3, state: dict) -> dict:
-    
+
         if state['timestep'] <= 1:
             value = params[param_initial_value]
         else:
-            relative_change = uniform(-params['MAXIMUM_UPDATE_PERCENTAGE_C'], params['MAXIMUM_UPDATE_PERCENTAGE_C'])
+            relative_change = uniform(-params['MAXIMUM_UPDATE_PERCENTAGE_C'],
+                                      params['MAXIMUM_UPDATE_PERCENTAGE_C'])
             value = state[state_var] * (1 + relative_change)
-        
+
         return {state_var: value}
     return p_oracle
+
+
+def p_oracle_proving_cost(params: ModelParams, _2, _3, state: ModelState) -> dict:
+
+    if state['timestep'] <= 1:
+        MANA_PER_TX = params['RELATIVE_TARGET_MANA_PER_BLOCK'] * \
+            params['MAXIMUM_MANA_PER_BLOCK'] / \
+            params['AVERAGE_TX_COUNT_PER_SLOT']
+        WEI_PER_USD = (10 ** 18) / params['market_price_eth']
+        PROOF_COST_IN_WEI_PER_MANA = params['PROVING_COST_INITIAL_IN_USD_PER_TX_C'] * \
+            WEI_PER_USD / MANA_PER_TX
+    else:
+        relative_change = uniform(-params['MAXIMUM_UPDATE_PERCENTAGE_C'],
+                                  params['MAXIMUM_UPDATE_PERCENTAGE_C'])
+        PROOF_COST_IN_WEI_PER_MANA = state['oracle_proving_cost'] * (
+            1 + relative_change)
+
+    return {'oracle_proving_cost': PROOF_COST_IN_WEI_PER_MANA}
 
 
 p_oracle_juice_per_wei = generic_oracle(
@@ -374,10 +405,6 @@ p_oracle_l1_blobgas = generic_oracle(
     'oracle_price_l1_blobgas',
     'update_time_oracle_price_l1_blobgas')
 
-p_oracle_proving_cost = generic_uniform_with_initial('oracle_proving_cost', 'PROVING_COST_INITIAL_C')
-
-
-
 
 def generic_random_walk(var, mu, std, do_round=True):
     def s_random_walk(params: ModelParams, _2, _3, state: dict, signal) -> tuple:
@@ -392,21 +419,21 @@ def generic_random_walk(var, mu, std, do_round=True):
     return s_random_walk
 
 
-
 def generic_gaussian_noise(var, mu_param, std_param, do_round=True):
     def s_random_walk(params, _2, _3, state: dict, signal) -> tuple:
 
         raw_value = max(normalvariate(params[mu_param], params[std_param]), 0)
         if do_round:
-            value = round(raw_value) # type: ignore
+            value = round(raw_value)  # type: ignore
         else:
-            value = raw_value # type: ignore
+            value = raw_value  # type: ignore
 
         return (var, value)
     return s_random_walk
 
 
-s_market_price_juice_per_wei = generic_gaussian_noise('market_price_juice_per_wei', 'JUICE_PER_WEI_MEAN', 'JUICE_PER_WEI_STD', False)
+s_market_price_juice_per_wei = generic_gaussian_noise(
+    'market_price_juice_per_wei', 'JUICE_PER_WEI_MEAN', 'JUICE_PER_WEI_STD', False)
 
 s_market_price_l1_gas = generic_random_walk('market_price_l1_gas', 0, 1, True)
 s_market_price_l1_blobgas = generic_random_walk(

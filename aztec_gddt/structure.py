@@ -57,6 +57,16 @@ RAW_MODEL_BLOCKS: list[dict] = [
         }
     },
     {
+        'label': 'Instantaneous metrics',
+        'ignore': False,
+        'policies': {
+
+        },
+        'variables': {
+            'base_fee': lambda p, _2, _3, s, _5: ('base_fee', compute_base_fee(p, s))
+        }
+    },
+    {
         'label': 'Epoch/Slot evolution',
         'ignore': False,
         'policies': {
@@ -71,7 +81,6 @@ RAW_MODEL_BLOCKS: list[dict] = [
             'cumm_total_tx': add_suf,
             'excess_mana': replace_suf,
             'l2_blocks_passed': add_suf,
-            'base_fee': replace_suf
         }
     },
     {

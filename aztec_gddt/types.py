@@ -20,6 +20,8 @@ WeiPerMana = Annotated[float, 'wei/mana']
 JuicePerWei = Annotated[float, 'juice/wei']
 JuicePerMana = Annotated[float, 'juice/mana']
 
+USDPerETH = Annotated[float, 'usd/eth']
+
 Juice = Annotated[int, 'juice']  # Aztec's analogue to Wei
 Mana = Annotated[int, 'mana']  # Aztec's analogue to Gas
 
@@ -134,19 +136,18 @@ class ModelParams(TypedDict):
     MIN_ORACLE_UPDATE_LAG_C: BlocksL1
 
     ### Fee ###
-    RELATIVE_TARGET_MANA_PER_BLOCK: Percentage  # sweep
+    RELATIVE_TARGET_MANA_PER_BLOCK: Percentage  # sweep, relative to the maximum mana per block
     BLOBS_PER_BLOCK: int
     L1_GAS_TO_VERIFY: Gas
     L2_SLOTS_PER_EPOCH: int
     L1_GAS_TO_PUBLISH: Gas
     L1_BLOBGAS_PER_BLOB: Gas
     POINT_EVALUATION_PRECOMIPLE_GAS: Gas
-    MINIMUM_MULTIPLIER_CONGESTION: float
-    UPDATE_FRACTION_CONGESTION: float
+    MINIMUM_MULTIPLIER_CONGESTION: float # sweep
+    RELATIVE_UPDATE_FRACTION_CONGESTION: float # sweep, relative to the maximum mana per block
     MAX_RELATIVE_CHANGE_CONGESTION: Percentage
     MAXIMUM_UPDATE_PERCENTAGE_C: Percentage
-    PROVING_COST_INITIAL_C: float
-    FEE_JUICE_PRICE_INITIAL_C: float
+    PROVING_COST_INITIAL_IN_USD_PER_TX_C: float
 
     ### Reward ###
     BLOCK_REWARD_VOLATILITY: float  # sweep
@@ -166,10 +167,12 @@ class ModelParams(TypedDict):
     PROVING_COST_MODIFICATION_E: Percentage  # env, sweep
     FEE_JUICE_PRICE_MODIFICATION_E: Percentage  # env, sweep
     ORACLE_UPDATE_FREQUENCY_E: Percentage  # env, sweep
-    JUICE_PER_WEI_MEAN: JuicePerMana
-    JUICE_PER_WEI_STD: JuicePerMana
-    MAX_FEE_INFLATION_PER_BLOCK: Percentage
+    JUICE_PER_WEI_MEAN: JuicePerWei
+    JUICE_PER_WEI_STD: JuicePerWei
     MAX_FEE_INFLATION_RELATIVE_MEAN: Percentage
     MAX_FEE_INFLATION_RELATIVE_STD: Percentage
+
+    # Exogenous
+    market_price_eth: USDPerETH
 
 

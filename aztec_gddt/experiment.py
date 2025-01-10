@@ -2,7 +2,7 @@ import pandas as pd
 from aztec_gddt.structure import MODEL_BLOCKS
 from aztec_gddt.utils import sim_run
 
-def test_run() -> pd.DataFrame:
+def test_run(N_TIMESTEPS=3000) -> pd.DataFrame:
     """Function which runs the cadCAD simulations
 
     Returns:
@@ -10,7 +10,6 @@ def test_run() -> pd.DataFrame:
     """
     from aztec_gddt.default_params import DEFAULT_INITIAL_STATE, DEFAULT_PARAMS
     # The number of timesteps for each simulation to run
-    N_TIMESTEPS = 3000
 
     # The number of monte carlo runs per set of parameters tested
     N_samples = 1
