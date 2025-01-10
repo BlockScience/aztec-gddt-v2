@@ -169,7 +169,7 @@ class ModelParams(TypedDict):
     FEE_JUICE_PRICE_MODIFICATION_E: Percentage  # env, sweep
     ORACLE_UPDATE_FREQUENCY_E: Percentage  # env, sweep
     JUICE_PER_WEI_MEAN: JuicePerWei
-    JUICE_PER_WEI_STD: JuicePerWei
+    JUICE_PER_WEI_COV: JuicePerWei
     MAX_FEE_INFLATION_RELATIVE_MEAN: Percentage
     MAX_FEE_INFLATION_RELATIVE_STD: Percentage
 

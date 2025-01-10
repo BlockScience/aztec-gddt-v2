@@ -423,10 +423,15 @@ def generic_random_walk(var, mu, std, do_round=True):
     return s_random_walk
 
 
-def generic_gaussian_noise(var, mu_param, std_param, do_round=True):
+def generic_gaussian_noise(var, mu_param, cov_param, do_round=True):
     def s_random_walk(params, _2, _3, state: dict, signal) -> tuple:
 
-        raw_value = max(normalvariate(params[mu_param], params[std_param]), 0)
+
+        if state['timestep'] <= 1:
+            raw_value = params[mu_param]
+        else:
+            raw_value = max(state[var] + normalvariate(0, params[mu_param] * params[cov_param]), 0.0)
+        
         if do_round:
             value = round(raw_value)  # type: ignore
         else:
@@ -437,7 +442,7 @@ def generic_gaussian_noise(var, mu_param, std_param, do_round=True):
 
 
 s_market_price_juice_per_wei = generic_gaussian_noise(
-    'market_price_juice_per_wei', 'JUICE_PER_WEI_MEAN', 'JUICE_PER_WEI_STD', False)
+    'market_price_juice_per_wei', 'JUICE_PER_WEI_MEAN', 'JUICE_PER_WEI_COV', False)
 
 s_market_price_l1_gas = generic_random_walk('market_price_l1_gas', 0, 1, True)
 s_market_price_l1_blobgas = generic_random_walk(

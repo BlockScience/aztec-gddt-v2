@@ -115,7 +115,7 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              FEE_JUICE_PRICE_MODIFICATION_E=0.001,
                              ORACLE_UPDATE_FREQUENCY_E=0.5,
                              JUICE_PER_WEI_MEAN=1.1e-15,
-                             JUICE_PER_WEI_STD=0.2e-15,
+                             JUICE_PER_WEI_COV=0.10,
                              MAX_FEE_INFLATION_RELATIVE_MEAN=1.0,
                              MAX_FEE_INFLATION_RELATIVE_STD=0.1,
 
