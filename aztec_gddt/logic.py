@@ -97,16 +97,18 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
             passively_excl_inds = np.bitwise_not(inds_valid_due_to_max_above_base)
             actively_excl_inds = np.bitwise_not(inds_valid_due_to_profitability) & np.bitwise_not(passively_excl_inds)
 
+
+            valid_inds = np.bitwise_not(passively_excl_inds | actively_excl_inds)
+
             excl_tx = np.sum(passively_excl_inds)
             dropped_tx = np.sum(actively_excl_inds)  # type: ignore
 
-            raw_total_mana = total_tx * params['OVERHEAD_MANA_PER_TX']
-            raw_total_fee = raw_total_mana * base_fee
-
             curr_slot.tx_total_mana = (
                 total_tx - excl_tx - dropped_tx) * params['OVERHEAD_MANA_PER_TX']
+            
+            curr_slot.tx_total_fee = max_fees[valid_inds].sum()
+            
 
-            # NOTE possibly add skipped / excluded txs somewhere here
     else:
         # If slot time has expired
         # then check whatever there's still
@@ -307,22 +309,24 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
 
 
 def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, signal) -> tuple:
+    if state['timestep'] <= 1:
+        multiplier = params['MINIMUM_MULTIPLIER_CONGESTION']
+    else:
+        upper_multiplier = state['congestion_multiplier'] * \
+            (1 + params['MAX_RELATIVE_CHANGE_CONGESTION'])
 
-    upper_multiplier = state['congestion_multiplier'] * \
-        (1 + params['MAX_RELATIVE_CHANGE_CONGESTION'])
+        lower_multiplier = state['congestion_multiplier'] * \
+            (1 - params['MAX_RELATIVE_CHANGE_CONGESTION'])
 
-    lower_multiplier = state['congestion_multiplier'] * \
-        (1 - params['MAX_RELATIVE_CHANGE_CONGESTION'])
+        update_frac = params['RELATIVE_UPDATE_FRACTION_CONGESTION'] * \
+            params['MAXIMUM_MANA_PER_BLOCK']
+        multiplier = params['MINIMUM_MULTIPLIER_CONGESTION']
+        multiplier *= math.exp(state['excess_mana'] / update_frac)
 
-    update_frac = params['RELATIVE_UPDATE_FRACTION_CONGESTION'] * \
-        params['MAXIMUM_MANA_PER_BLOCK']
-    multiplier = params['MINIMUM_MULTIPLIER_CONGESTION']
-    multiplier *= math.exp(state['excess_mana'] / update_frac)
-
-    if multiplier > upper_multiplier:
-        multiplier = upper_multiplier
-    elif multiplier < lower_multiplier:
-        multiplier = lower_multiplier
+        if multiplier > upper_multiplier:
+            multiplier = upper_multiplier
+        elif multiplier < lower_multiplier:
+            multiplier = lower_multiplier
 
     return ('congestion_multiplier', multiplier)
 

@@ -45,6 +45,7 @@ class Slot():
     has_block_header_on_l1: bool = False
     tx_count: int = 0
     tx_total_mana: Mana = 0
+    tx_total_fee: Juice = 0
 
     @property
     def is_valid_proposal(self):

@@ -35,7 +35,7 @@ DEFAULT_INITIAL_STATE = ModelState(
 
     # Block Reward related values
     last_reward_time_in_l1=0,  # XXX
-    last_reward=15_000,  # XXX
+    last_reward=1_500,  # Roughly based on the 1st month reward
 
     # Market & Oracle Values
     market_price_juice_per_wei=float('nan'),
@@ -51,7 +51,7 @@ DEFAULT_INITIAL_STATE = ModelState(
     update_time_oracle_price_l1_blobgas=-999,
 
     oracle_proving_cost=float('nan'),  # TODO
-    congestion_multiplier=1.0,  # TODO
+    congestion_multiplier=float('nan'),  # TODO
     excess_mana=0,  # TODO
 
 
@@ -89,7 +89,7 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              L1_GAS_TO_PUBLISH=150_000,  # fixeds
                              L1_BLOBGAS_PER_BLOB=int(2 ** 17),  # fixed, ~131k
                              POINT_EVALUATION_PRECOMIPLE_GAS=50_000, # fixed
-                             MINIMUM_MULTIPLIER_CONGESTION=1.0,  # sweep
+                             MINIMUM_MULTIPLIER_CONGESTION=4_000_000,  # sweep
                              RELATIVE_UPDATE_FRACTION_CONGESTION=0.5, # sweep
                              MAX_RELATIVE_CHANGE_CONGESTION=0.03,  # TODO
                              MAXIMUM_UPDATE_PERCENTAGE_C=0.03,
