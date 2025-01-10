@@ -1,0 +1,74 @@
+from dataclasses import dataclass
+import pandas as pd
+
+@dataclass
+class ExecutionTime():
+    before_setup: float = float('nan')
+    before_run: float = float('nan')
+    after_run: float = float('nan')
+    after_proc: float = float('nan')
+
+    @property
+    def simulation(this):
+        return this.after_run - this.before_run
+    
+    @property
+    def workflow(this):
+        return this.before_setup - this.after_proc
+
+
+def execute_sim(exp_fn, N_TIMESTEPS, N_SAMPLES, N_CONFIG_SAMPLES) -> tuple[pd.DataFrame, ExecutionTime]:
+    from time import time
+
+    exec_time = ExecutionTime()
+
+    exec_time.before_run = time()
+    exp = exp_fn(N_timesteps=N_TIMESTEPS, N_samples=N_SAMPLES, N_config_sample=N_CONFIG_SAMPLES)
+
+
+    from cadCAD.engine import ExecutionContext, ExecutionMode, Executor
+
+
+    _exec_mode = ExecutionMode().single_mode
+    exec_context = ExecutionContext(_exec_mode, additional_objs={'deepcopy_off': True})
+    executor = Executor(exec_context=exec_context, configs=exp.configs, supress_print=False)
+
+    # Execute the cadCAD experiment
+    exec_time.before_run = time()
+    (records, tensor_field, _) = executor.execute()
+    exec_time.after_run = time()
+
+    # Parse the output as a pandas DataFrame
+    df = pd.DataFrame(records)
+
+    # Drop substeps
+    first_ind = (df.substep == 0) & (df.timestep == 0)
+    last_ind = df.substep == max(df.substep)
+    inds_to_drop = first_ind | last_ind
+    df = df.loc[inds_to_drop].drop(columns=['substep'])
+
+
+    # Assign Params
+    M_dict = exp.configs[0].sim_config['M']
+    params_set = set(M_dict.keys())
+
+    selected_params = params_set
+    # Attribute parameters to each row*
+
+    from cadCAD.tools.execution.easy_run import select_config_M_dict # type: ignore
+    params_dict = select_config_M_dict(exp.configs, 0, selected_params)
+
+    # Handles all cases of parameter types including list
+    for key, value in params_dict.items():
+        df[key] = df.apply(lambda _: value, axis=1)
+
+    for i, (_, n_df) in enumerate(df.groupby(['simulation', 'subset', 'run'])):
+        params_dict = select_config_M_dict(exp.configs, i, selected_params)
+        for key, value in params_dict.items():
+            df.loc[n_df.index, key] = df.loc[n_df.index].apply(
+                lambda _: value, axis=1)
+            
+
+    sim_df = df
+    exec_time.after_proc = time()
+    return sim_df, exec_time

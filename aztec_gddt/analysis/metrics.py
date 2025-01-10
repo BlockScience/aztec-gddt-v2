@@ -51,6 +51,43 @@ def network_resumed_finalization_following_inactivity(traj_df: pd.DataFrame) -> 
     return False
 
 
+
+
+def avg_over_fn(group_traj_dfs: list[pd.DataFrame], fn):
+    avgs = []
+    for traj_df in group_traj_dfs:
+        avgs.append(fn(traj_df))
+    return np.mean(avgs)
+
+
+PER_TRAJECTORY_METRICS_LABELS = {
+    'T-M1': "Fee/Juice Volatility",
+    'T-M2': "Empty Blocks",
+    'T-M3': "Unproven Epochs",
+    'T-M4': "",
+    'T-M5': "",
+    'T-M6': "",
+    'T-M7': "",
+    'T-M8': "",
+    'T-M9': "",
+}
+
+PER_TRAJECTORY_GROUP_METRICS_LABELS = {
+    'TG-M1': "",
+    'TG-M2': "",
+    'TG-M3': "",
+    'TG-M4': "",
+    'TG-M5': "", 
+    'TG-M6': "",
+    'TG-M7': "",
+    'TG-M8': "",
+    'TG-M9': "",
+    'TG-M10': "", 
+    'TG-M11': "", 
+    'TG-M12': "",
+    'TG-M13': "",
+}
+
 PER_TRAJECTORY_METRICS = {
     'T-M1': relative_volatility_across_time,
     'T-M2': empty_blocks_during_trajectory,
@@ -62,14 +99,6 @@ PER_TRAJECTORY_METRICS = {
     'T-M8': counterfactual_sequencer_losses_due_to_lag,
     'T-M9': network_resumed_finalization_following_inactivity,
 }
-
-
-def avg_over_fn(group_traj_dfs: list[pd.DataFrame], fn):
-    avgs = []
-    for traj_df in group_traj_dfs:
-        avgs.append(fn(traj_df))
-    return np.mean(avgs)
-
 
 PER_TRAJECTORY_GROUP_METRICS = {
     'TG-M1': lambda dfs: avg_over_fn(dfs, relative_volatility_across_time),
@@ -85,5 +114,45 @@ PER_TRAJECTORY_GROUP_METRICS = {
     'TG-M11': lambda dfs: float('nan'), # TODO
     'TG-M12': lambda dfs: float('nan'), # TODO
     'TG-M13': lambda dfs: float('nan'), # TODO
-
 }
+
+PER_TRAJECTORY_GROUP_COLLAPSED_METRICS = {
+    'TG-M1': lambda agg_df, x: agg_df[x] < agg_df[x].median(),
+    'TG-M2': lambda agg_df, x: agg_df[x] < agg_df[x].median(),
+    'TG-M3': lambda agg_df, x: agg_df[x] < agg_df[x].median(),
+    'TG-M4': lambda agg_df, x: agg_df[x] < agg_df[x].median(),
+    'TG-M5': lambda agg_df: float('nan'), # TODO
+    'TG-M6': lambda agg_df, x: agg_df[x] < agg_df[x].median(),
+    'TG-M7': lambda agg_df: float('nan'), # TODO
+    'TG-M8': lambda agg_df: float('nan'), # TODO
+    'TG-M9': lambda agg_df, x: agg_df[x] < agg_df[x].median(),
+    'TG-M10': lambda agg_df: float('nan'), # TODO
+    'TG-M11': lambda agg_df: float('nan'), # TODO
+    'TG-M12': lambda agg_df: float('nan'), # TODO
+    'TG-M13': lambda agg_df: float('nan'), # TODO
+}
+
+
+def retrieve_feature_df(sim_df, control_params, RELEVANT_PER_TRAJECTORY_GROUP_METRICS):
+
+    group_params = ['simulation', 'subset'] + control_params
+    records = []
+    for label in RELEVANT_PER_TRAJECTORY_GROUP_METRICS:
+        fn = PER_TRAJECTORY_GROUP_METRICS[label]
+
+        groups = list(sim_df.reset_index().groupby(group_params))
+        for i, g in groups:
+            dfs = [el[1] for el in list(g.groupby('run'))]
+            value = fn(dfs)
+            record = dict(zip(group_params, i))
+            record['metric'] = label
+            record['metric_value'] = value
+            records.append(record)
+
+    agg_df = pd.DataFrame(records).groupby(group_params + ['metric']).metric_value.first().unstack().reset_index()
+
+    collapsed_agg_df = agg_df.copy()
+
+    for label in RELEVANT_PER_TRAJECTORY_GROUP_METRICS:
+        collapsed_agg_df[label] = PER_TRAJECTORY_GROUP_COLLAPSED_METRICS[label](agg_df, label)
+    return agg_df, collapsed_agg_df
