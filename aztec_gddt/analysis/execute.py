@@ -14,7 +14,7 @@ class ExecutionTime():
     
     @property
     def workflow(this):
-        return this.before_setup - this.after_proc
+        return this.after_proc - this.before_run
 
 
 def execute_sim(exp_fn, N_TIMESTEPS, N_SAMPLES, N_CONFIG_SAMPLES) -> tuple[pd.DataFrame, ExecutionTime]:
@@ -72,3 +72,21 @@ def execute_sim(exp_fn, N_TIMESTEPS, N_SAMPLES, N_CONFIG_SAMPLES) -> tuple[pd.Da
     sim_df = df
     exec_time.after_proc = time()
     return sim_df, exec_time
+
+
+
+def complexity_desc(sim_df: pd.DataFrame, exec_time: ExecutionTime) -> str:
+    N_trajectories = len(sim_df[['subset', 'run']].drop_duplicates())
+
+    text = f"""
+    #### Computational Complexity:
+    1. Total number of parameter combinations: {len(sim_df.subset.unique()):,}
+    2. Total number of Monte Carlo runs per parameter combination: {len(sim_df.run.unique()):,}
+    3. Total number of trajectories: {N_trajectories:,}
+    4. Total number of timesteps per trajectory: {sim_df.timestep.max():,}
+    5. Total number of state measurements: {len(sim_df):,}
+    6. Workflow execution time: {exec_time.workflow:,.3} seconds ({exec_time.workflow / N_trajectories:,.3} seconds per trajectory)
+    7. Engine execution time: {exec_time.simulation:,.3} seconds ({exec_time.simulation / N_trajectories:,.3} seconds per trajectory)
+    """
+
+    return text
