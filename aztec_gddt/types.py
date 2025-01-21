@@ -15,7 +15,7 @@ Fiat = float
 
 Wei = Annotated[int, 'wei']  # 1e-18 ETH
 Gas = Annotated[int, 'gas']
-WeiPerGas = Annotated[int, 'wei/gas']
+WeiPerGas = Annotated[float, 'wei/gas']
 WeiPerMana = Annotated[float, 'wei/mana']
 JuicePerWei = Annotated[float, 'juice/wei']
 JuicePerMana = Annotated[float, 'juice/mana']

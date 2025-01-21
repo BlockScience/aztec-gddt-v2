@@ -84,6 +84,7 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
                 1 + inflation_estimate * params['MAX_FEE_INFLATION_RELATIVE_MEAN']) * past_base_fee
 
             max_fee_std = params['MAX_FEE_INFLATION_RELATIVE_STD'] * max_fee
+            
 
             max_fees = st.norm.rvs(loc=max_fee_avg,
                                    scale=max_fee_std,
@@ -423,14 +424,14 @@ def generic_random_walk(var, mu, std, do_round=True):
     return s_random_walk
 
 
-def generic_gaussian_noise(var, mu_param, cov_param, do_round=True):
+def generic_gaussian_noise(var, mu_param, cov_param, do_round=True, min_value=0.0):
     def s_random_walk(params, _2, _3, state: dict, signal) -> tuple:
 
 
         if state['timestep'] <= 1:
             raw_value = params[mu_param]
         else:
-            raw_value = max(state[var] + normalvariate(0, params[mu_param] * params[cov_param]), 0.0)
+            raw_value = max(state[var] + normalvariate(0, params[mu_param] * params[cov_param]), min_value)
         
         if do_round:
             value = round(raw_value)  # type: ignore
@@ -442,12 +443,12 @@ def generic_gaussian_noise(var, mu_param, cov_param, do_round=True):
 
 
 s_market_price_juice_per_wei = generic_gaussian_noise(
-    'market_price_juice_per_wei', 'JUICE_PER_WEI_MEAN', 'JUICE_PER_WEI_COV', False)
+    'market_price_juice_per_wei', 'JUICE_PER_WEI_MEAN', 'JUICE_PER_WEI_COV', False, min_value=0.0)
 
 s_market_price_l1_gas = generic_gaussian_noise(
-    'market_price_l1_gas', 'WEI_PER_L1GAS_MEAN', 'WEI_PER_L1GAS_COV', False)
+    'market_price_l1_gas', 'WEI_PER_L1GAS_MEAN', 'WEI_PER_L1GAS_COV', True, min_value=1.0)
 s_market_price_l1_blobgas = generic_gaussian_noise(
-    'market_price_l1_blob_gas', 'WEI_PER_L1BLOBGAS_MEAN', 'WEI_PER_L1BLOBGAS_COV', False)
+    'market_price_l1_blobgas', 'WEI_PER_L1BLOBGAS_MEAN', 'WEI_PER_L1BLOBGAS_COV', True, min_value=1.0)
 
 
 def replace_suf(variable: str, default_value=0.0):

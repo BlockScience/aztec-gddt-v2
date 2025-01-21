@@ -171,7 +171,7 @@ def plot_inspect_vars(sim_df):
         melted_df = traj_df.reset_index().melt(id_vars=[X_COL], value_vars=cols_5)
         sns.lineplot(melted_df, x=X_COL, y='value', hue='variable', ax=ax)
         ax.grid()
-        ax.set_yscale('log')
+        #ax.set_yscale('log')
         ax.set_ylabel('Gwei')
         if i < N_subsets - 1:
             ax.get_legend().remove()

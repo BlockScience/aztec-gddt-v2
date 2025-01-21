@@ -39,12 +39,12 @@ DEFAULT_INITIAL_STATE = ModelState(
 
     # Market & Oracle Values
     market_price_juice_per_wei=float('nan'),
-    market_price_l1_gas=30,  # TODO
-    market_price_l1_blobgas=5,  # TODO
+    market_price_l1_gas=float('nan'),  # TODO
+    market_price_l1_blobgas=float('nan'),  # TODO
 
     oracle_price_juice_per_wei=float('nan'),
-    oracle_price_l1_gas=28,  # TODO
-    oracle_price_l1_blobgas=4,  # TODO
+    oracle_price_l1_gas=float('nan'),  # TODO
+    oracle_price_l1_blobgas=float('nan'),  # TODO
 
     update_time_oracle_price_juice_per_wei=-999,
     update_time_oracle_price_l1_gas=-999,
@@ -122,7 +122,7 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              WEI_PER_L1GAS_MEAN=30,
                              WEI_PER_L1GAS_COV=0.01,
                              WEI_PER_L1BLOBGAS_MEAN=5,
-                             WEI_PER_L1BLOBGAS_COV=0.01,
+                             WEI_PER_L1BLOBGAS_COV=0.05,
 
                              # Exogenous
                              market_price_eth=3300,

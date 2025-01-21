@@ -191,8 +191,6 @@ def compute_base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
     proving_cost_per_mana_in_wei = state['oracle_proving_cost']
     congestion_multiplier = state['congestion_multiplier']
 
-    excess_mana = state['excess_mana']
-
     return raw_base_fee(
         target_mana_per_block=target_mana_per_block(params),
 

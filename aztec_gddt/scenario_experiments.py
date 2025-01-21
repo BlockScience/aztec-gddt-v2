@@ -38,9 +38,9 @@ experiment_feemech_l2_cost_censorship = ExperimentParamSpec(
         'MAX_FEE_INFLATION_RELATIVE_MEAN': [0.5, 1.0, 1.5],
         'MAX_FEE_INFLATION_RELATIVE_STD': [0.02, 0.10, 0.50]
     },
-    N_timesteps=100,
-    N_samples=2,
-    N_config_sample=300
+    N_timesteps=3_000,
+    N_samples=3,
+    N_config_sample=-1
 )
 
 experiment_feemech_shock_analysis = ExperimentParamSpec(
@@ -54,10 +54,67 @@ experiment_feemech_shock_analysis = ExperimentParamSpec(
         'MAXIMUM_UPDATE_PERCENTAGE_C': [0.01, 0.03]
     },
     params_swept_env={
-        'MAX_FEE_INFLATION_RELATIVE_MEAN': [0.5, 1.0, 1.5],
-        'MAX_FEE_INFLATION_RELATIVE_STD': [0.02, 0.10, 0.50]
+        # TODO
     },
-    N_timesteps=100,
-    N_samples=2,
-    N_config_sample=300
+    N_timesteps=3_000,
+    N_samples=5,
+    N_config_sample=-1
+)
+
+
+experiment_feemech_oracle_sensitivity = ExperimentParamSpec(
+    params_swept_control={
+        'MAXIMUM_UPDATE_PERCENTAGE_C': [0.01, 0.03],
+    },
+    params_swept_env={
+        'ORACLE_UPDATE_PRICE_FREQUENCY': [0.10, 0.50],
+        'PROVING_COST_MODIFICATION_E': ["-", "=", "+"], # TODO
+        'FEE_JUICE_PRICE_MODIFICATION_E': ["-", "=", "+"], # TODO
+    },
+    N_timesteps=3_000,
+    N_samples=100,
+    N_config_sample=-1
+)
+
+experiment_stakeslash_resume_inactivity = ExperimentParamSpec(
+    params_swept_control={
+        'PERCENTAGE_STAKE_SLASHED_C': [0.00, 0.10, 1.00],
+        'VALIDATOR_COMMITTEE_SIZE_C': [128, 256, 512],
+        'SIGNATURED_NEEDED_PERCENTAGE_C': [0.51, 0.98]
+    },
+    params_swept_env={
+        'PROBABILITY_SLASHABLE_ACTION_E': [0.00_1, 0.01_0, 0.10_0]
+    },
+    N_timesteps=3_000,
+    N_samples=50,
+    N_config_sample=-1
+)
+
+
+experiment_stakeslash_validator_eject = ExperimentParamSpec(
+    params_swept_control={
+        'PERCENTAGE_STAKE_SLASHED_C': [0.00, 0.10, 1.00],
+        'VALIDATOR_COMMITTEE_SIZE_C': [128, 256, 512],
+        'SIGNATURED_NEEDED_PERCENTAGE_C': [0.51, 0.98]
+    },
+    params_swept_env={
+        'PROBABILITY_SLASHABLE_ACTION_E': [0.00_1, 0.01_0, 0.10_0]
+    },
+    N_timesteps=3_000,
+    N_samples=50,
+    N_config_sample=-1
+)
+
+experiment_l2_congestion = ExperimentParamSpec(
+    params_swept_control={
+        'RELATIVE_TARGET_MANA_PER_BLOCK': [0.50, 0.90],
+        'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000],
+    },
+    params_swept_env={
+        'SEQUENCER_L1_GAS_PRICE_THRESHOLD_E': ['low', 'high'],
+        'USER_MAXIMUM_MANA_E': ['low', 'high']
+    },
+    N_timesteps=3_000,
+    N_samples=50,
+    N_config_sample=-1
 )
