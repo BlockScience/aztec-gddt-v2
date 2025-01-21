@@ -149,6 +149,9 @@ def proving_cost_fn(minimum_proving_cost_wei_per_mana: WeiPerMana,
                     proving_cost_modifier: float,
                     proving_cost_update_fraction: float) -> WeiPerMana:
     exp_term = math.exp(proving_cost_modifier / proving_cost_update_fraction)
+
+    # TODO: include logic for bounding the update to a min-max range.
+
     return minimum_proving_cost_wei_per_mana * exp_term
 
 

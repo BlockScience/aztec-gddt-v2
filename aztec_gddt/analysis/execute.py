@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import pandas as pd
+from aztec_gddt.helper_types import ExperimentWrapper
 
 @dataclass
 class ExecutionTime():
@@ -17,13 +18,13 @@ class ExecutionTime():
         return this.after_proc - this.before_run
 
 
-def execute_sim(exp_fn, N_TIMESTEPS, N_SAMPLES, N_CONFIG_SAMPLES) -> tuple[pd.DataFrame, ExecutionTime]:
+def execute_sim(exp_wrapper: ExperimentWrapper) -> tuple[pd.DataFrame, ExecutionTime]:
     from time import time
 
     exec_time = ExecutionTime()
 
     exec_time.before_run = time()
-    exp = exp_fn(N_timesteps=N_TIMESTEPS, N_samples=N_SAMPLES, N_config_sample=N_CONFIG_SAMPLES)
+    exp = exp_wrapper.experiment
 
 
     from cadCAD.engine import ExecutionContext, ExecutionMode, Executor
@@ -72,8 +73,6 @@ def execute_sim(exp_fn, N_TIMESTEPS, N_SAMPLES, N_CONFIG_SAMPLES) -> tuple[pd.Da
     sim_df = df
     exec_time.after_proc = time()
     return sim_df, exec_time
-
-
 
 def complexity_desc(sim_df: pd.DataFrame, exec_time: ExecutionTime) -> str:
     N_trajectories = len(sim_df[['subset', 'run']].drop_duplicates())

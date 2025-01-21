@@ -7,8 +7,6 @@ import pandas as pd
 import sys
 import os
 from functools import partialmethod
-from inspect import signature, getfile
-
 
 class HiddenPrints:
     def __init__(self, is_active=True):
@@ -111,3 +109,4 @@ def sim_run(
 
         df = df.reset_index(drop=False)
         return df
+

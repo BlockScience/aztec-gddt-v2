@@ -444,9 +444,10 @@ def generic_gaussian_noise(var, mu_param, cov_param, do_round=True):
 s_market_price_juice_per_wei = generic_gaussian_noise(
     'market_price_juice_per_wei', 'JUICE_PER_WEI_MEAN', 'JUICE_PER_WEI_COV', False)
 
-s_market_price_l1_gas = generic_random_walk('market_price_l1_gas', 0, 1, True)
-s_market_price_l1_blobgas = generic_random_walk(
-    'market_price_l1_blobgas', 0, 1, True)
+s_market_price_l1_gas = generic_gaussian_noise(
+    'market_price_l1_gas', 'WEI_PER_L1GAS_MEAN', 'WEI_PER_L1GAS_COV', False)
+s_market_price_l1_blobgas = generic_gaussian_noise(
+    'market_price_l1_blob_gas', 'WEI_PER_L1BLOBGAS_MEAN', 'WEI_PER_L1BLOBGAS_COV', False)
 
 
 def replace_suf(variable: str, default_value=0.0):

@@ -42,7 +42,7 @@ DEFAULT_INITIAL_STATE = ModelState(
     market_price_l1_gas=30,  # TODO
     market_price_l1_blobgas=5,  # TODO
 
-    oracle_price_juice_per_wei=float('nan'),  
+    oracle_price_juice_per_wei=float('nan'),
     oracle_price_l1_gas=28,  # TODO
     oracle_price_l1_blobgas=4,  # TODO
 
@@ -88,9 +88,9 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              L2_SLOTS_PER_EPOCH=32,  # fixed
                              L1_GAS_TO_PUBLISH=150_000,  # fixeds
                              L1_BLOBGAS_PER_BLOB=int(2 ** 17),  # fixed, ~131k
-                             POINT_EVALUATION_PRECOMIPLE_GAS=50_000, # fixed
+                             POINT_EVALUATION_PRECOMIPLE_GAS=50_000,  # fixed
                              MINIMUM_MULTIPLIER_CONGESTION=4_000_000,  # sweep
-                             RELATIVE_UPDATE_FRACTION_CONGESTION=0.5, # sweep
+                             RELATIVE_UPDATE_FRACTION_CONGESTION=0.5,  # sweep
                              MAX_RELATIVE_CHANGE_CONGESTION=0.03,  # TODO
                              MAXIMUM_UPDATE_PERCENTAGE_C=0.03,
                              PROVING_COST_INITIAL_IN_USD_PER_TX_C=0.03,
@@ -119,6 +119,11 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              MAX_FEE_INFLATION_RELATIVE_MEAN=1.0,
                              MAX_FEE_INFLATION_RELATIVE_STD=0.1,
 
-                             ### Exogenous
+                             WEI_PER_L1GAS_MEAN=30,
+                             WEI_PER_L1GAS_COV=0.01,
+                             WEI_PER_L1BLOBGAS_MEAN=5,
+                             WEI_PER_L1BLOBGAS_COV=0.01,
+
+                             # Exogenous
                              market_price_eth=3300,
                              )

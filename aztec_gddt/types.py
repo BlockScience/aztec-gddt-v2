@@ -173,7 +173,11 @@ class ModelParams(TypedDict):
     MAX_FEE_INFLATION_RELATIVE_MEAN: Percentage
     MAX_FEE_INFLATION_RELATIVE_STD: Percentage
 
+    WEI_PER_L1GAS_MEAN: WeiPerGas
+    WEI_PER_L1GAS_COV: Percentage
+    WEI_PER_L1BLOBGAS_MEAN: WeiPerGas
+    WEI_PER_L1BLOBGAS_COV: Percentage
+
     # Exogenous
     market_price_eth: USDPerETH
-
 
