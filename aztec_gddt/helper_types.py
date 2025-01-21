@@ -6,7 +6,7 @@ from cadCAD.configuration import Experiment  # type: ignore
 from cadCAD.configuration.utils import config_sim  # type: ignore
 from cadCAD.tools.preparation import sweep_cartesian_product  # type: ignore
 from random import sample
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -26,6 +26,16 @@ class ExperimentParamSpec():
     N_timesteps: int
     N_samples: int
     N_config_sample: int
+    relevant_per_trajectory_metrics: list[str] = field(default_factory=list)
+    relevant_per_trajectory_group_metrics: list[str] = field(default_factory=list)
+
+    def print_control_params(self):
+        for k, v in self.params_swept_control.items():
+            print(f"{k}: {v}")
+
+    def print_env_params(self):
+        for k, v in self.params_swept_env.items():
+            print(f"{k}: {v}")
 
     def prepare(self) -> ExperimentWrapper:
         default_params = {k: [v] for k, v in DEFAULT_PARAMS.items()}

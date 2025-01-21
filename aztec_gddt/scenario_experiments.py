@@ -21,7 +21,9 @@ experiment_feemech_volatility = ExperimentParamSpec(
     },
     N_timesteps=3_000,
     N_samples=5,
-    N_config_sample=-1
+    N_config_sample=-1,
+    relevant_per_trajectory_metrics=['T-M1', 'T-M2', 'T-M3'],
+    relevant_per_trajectory_group_metrics=['TG-M1', 'TG-M2', 'TG-M3'],
 )
 
 experiment_feemech_l2_cost_censorship = ExperimentParamSpec(
@@ -40,7 +42,9 @@ experiment_feemech_l2_cost_censorship = ExperimentParamSpec(
     },
     N_timesteps=3_000,
     N_samples=3,
-    N_config_sample=-1
+    N_config_sample=-1,
+    relevant_per_trajectory_metrics=['T-M4'],
+    relevant_per_trajectory_group_metrics=['TG-M4', 'TG-M5'],
 )
 
 experiment_feemech_shock_analysis = ExperimentParamSpec(
@@ -58,7 +62,9 @@ experiment_feemech_shock_analysis = ExperimentParamSpec(
     },
     N_timesteps=3_000,
     N_samples=5,
-    N_config_sample=-1
+    N_config_sample=-1,
+    relevant_per_trajectory_metrics=['T-M5', 'T-M6'],
+    relevant_per_trajectory_group_metrics=['TG-M6', 'TG-M7'],
 )
 
 
@@ -73,7 +79,9 @@ experiment_feemech_oracle_sensitivity = ExperimentParamSpec(
     },
     N_timesteps=3_000,
     N_samples=100,
-    N_config_sample=-1
+    N_config_sample=-1,
+    relevant_per_trajectory_metrics=['T-M8', 'T-M9'],
+    relevant_per_trajectory_group_metrics=['TG-M7', 'TG-M8'],
 )
 
 experiment_stakeslash_resume_inactivity = ExperimentParamSpec(
@@ -87,7 +95,9 @@ experiment_stakeslash_resume_inactivity = ExperimentParamSpec(
     },
     N_timesteps=3_000,
     N_samples=50,
-    N_config_sample=-1
+    N_config_sample=-1,
+    relevant_per_trajectory_metrics=['T-M9'],
+    relevant_per_trajectory_group_metrics=['TG-M10'],
 )
 
 
@@ -102,7 +112,9 @@ experiment_stakeslash_validator_eject = ExperimentParamSpec(
     },
     N_timesteps=3_000,
     N_samples=50,
-    N_config_sample=-1
+    N_config_sample=-1,
+    relevant_per_trajectory_metrics=['T-M10'],
+    relevant_per_trajectory_group_metrics=['TG-M11'],
 )
 
 experiment_l2_congestion = ExperimentParamSpec(
@@ -116,5 +128,7 @@ experiment_l2_congestion = ExperimentParamSpec(
     },
     N_timesteps=3_000,
     N_samples=50,
-    N_config_sample=-1
+    N_config_sample=-1,
+    relevant_per_trajectory_metrics=['T-M11'],
+    relevant_per_trajectory_group_metrics=['TG-M12', 'TG-M13'],
 )

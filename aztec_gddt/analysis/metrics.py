@@ -60,6 +60,18 @@ def avg_over_fn(group_traj_dfs: list[pd.DataFrame], fn):
     return np.mean(avgs)
 
 
+def under_threshold_over_fn(group_traj_dfs: list[pd.DataFrame], fn):
+    values = []
+    for traj_df in group_traj_dfs:
+        value = fn(traj_df)
+        values.append(value)
+
+    values = np.array(values)
+    threshold = np.median(values)
+    count_under_threshold = np.sum(values <= threshold)
+    return count_under_threshold / len(values)
+
+
 PER_TRAJECTORY_METRICS_LABELS = {
     'T-M1': "Fee/Juice Volatility",
     'T-M2': "Empty Blocks",
@@ -70,6 +82,8 @@ PER_TRAJECTORY_METRICS_LABELS = {
     'T-M7': "",
     'T-M8': "",
     'T-M9': "",
+    'T-M10': "",
+    'T-M11': "",
 }
 
 PER_TRAJECTORY_GROUP_METRICS_LABELS = {
@@ -98,6 +112,8 @@ PER_TRAJECTORY_METRICS = {
     'T-M7': base_fee_divided_by_oracle_parameter,
     'T-M8': counterfactual_sequencer_losses_due_to_lag,
     'T-M9': network_resumed_finalization_following_inactivity,
+    'T-M10': None, # TODO
+    'T-M11': None # TODO
 }
 
 PER_TRAJECTORY_GROUP_METRICS = {
@@ -105,7 +121,7 @@ PER_TRAJECTORY_GROUP_METRICS = {
     'TG-M2': lambda dfs: avg_over_fn(dfs, empty_blocks_during_trajectory),
     'TG-M3': lambda dfs: avg_over_fn(dfs, unproven_epochs_during_trajectory),
     'TG-M4': lambda dfs: avg_over_fn(dfs, fraction_dropped_tx_during_trajectory),
-    'TG-M5': lambda dfs: float('nan'), # TODO
+    'TG-M5': lambda dfs: under_threshold_over_fn(dfs, fraction_dropped_tx_during_trajectory),
     'TG-M6': lambda dfs: avg_over_fn(dfs, fraction_excluded_tx_during_trajectory),
     'TG-M7': lambda dfs: avg_over_fn(dfs, base_fee_rebound_inside_range),
     'TG-M8': lambda dfs: avg_over_fn(dfs, base_fee_divided_by_oracle_parameter),
@@ -121,15 +137,15 @@ PER_TRAJECTORY_GROUP_COLLAPSED_METRICS = {
     'TG-M2': lambda agg_df, x: agg_df[x] < agg_df[x].median(),
     'TG-M3': lambda agg_df, x: agg_df[x] < agg_df[x].median(),
     'TG-M4': lambda agg_df, x: agg_df[x] < agg_df[x].median(),
-    'TG-M5': lambda agg_df: float('nan'), # TODO
+    'TG-M5': lambda agg_df, x: agg_df[x] > agg_df[x].median(),
     'TG-M6': lambda agg_df, x: agg_df[x] < agg_df[x].median(),
-    'TG-M7': lambda agg_df: float('nan'), # TODO
-    'TG-M8': lambda agg_df: float('nan'), # TODO
+    'TG-M7': lambda agg_df, x: agg_df[x] > agg_df[x].median(),
+    'TG-M8': lambda agg_df, x: agg_df[x] > agg_df[x].median(),
     'TG-M9': lambda agg_df, x: agg_df[x] < agg_df[x].median(),
-    'TG-M10': lambda agg_df: float('nan'), # TODO
-    'TG-M11': lambda agg_df: float('nan'), # TODO
-    'TG-M12': lambda agg_df: float('nan'), # TODO
-    'TG-M13': lambda agg_df: float('nan'), # TODO
+    'TG-M10': lambda agg_df, x: agg_df[x] > agg_df[x].median(),
+    'TG-M11': lambda agg_df, x: agg_df[x] < agg_df[x].median(),
+    'TG-M12': lambda agg_df, x: agg_df[x] > agg_df[x].median(),
+    'TG-M13': lambda agg_df, x: agg_df[x] > agg_df[x].median(),
 }
 
 
