@@ -38,15 +38,15 @@ DEFAULT_INITIAL_STATE = ModelState(
     last_reward=1_500,  # Roughly based on the 1st month reward
 
     # Market & Oracle Values
-    market_price_juice_per_wei=float('nan'),
+    market_price_juice_per_gwei=float('nan'),
     market_price_l1_gas=float('nan'),  # TODO
     market_price_l1_blobgas=float('nan'),  # TODO
 
-    oracle_price_juice_per_wei=float('nan'),
+    oracle_price_juice_per_gwei=float('nan'),
     oracle_price_l1_gas=float('nan'),  # TODO
     oracle_price_l1_blobgas=float('nan'),  # TODO
 
-    update_time_oracle_price_juice_per_wei=-999,
+    update_time_oracle_price_juice_per_gwei=-999,
     update_time_oracle_price_l1_gas=-999,
     update_time_oracle_price_l1_blobgas=-999,
 
@@ -114,15 +114,15 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              PROVING_COST_MODIFICATION_E=0.005,
                              FEE_JUICE_PRICE_MODIFICATION_E=0.001,
                              ORACLE_UPDATE_FREQUENCY_E=0.5,
-                             JUICE_PER_WEI_MEAN=1.1e-15,
-                             JUICE_PER_WEI_COV=0.10,
+                             JUICE_PER_GWEI_MEAN=1.1e-15,
+                             JUICE_PER_GWEI_COV=0.10,
                              MAX_FEE_INFLATION_RELATIVE_MEAN=1.0,
                              MAX_FEE_INFLATION_RELATIVE_STD=0.1,
 
-                             WEI_PER_L1GAS_MEAN=30,
-                             WEI_PER_L1GAS_COV=0.01,
-                             WEI_PER_L1BLOBGAS_MEAN=5,
-                             WEI_PER_L1BLOBGAS_COV=0.05,
+                             GWEI_PER_L1GAS_MEAN=30,
+                             GWEI_PER_L1GAS_COV=0.01,
+                             GWEI_PER_L1BLOBGAS_MEAN=5,
+                             GWEI_PER_L1BLOBGAS_COV=0.05,
 
                              # Exogenous
                              market_price_eth=3300,

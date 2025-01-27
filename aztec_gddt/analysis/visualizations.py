@@ -105,13 +105,13 @@ def plot_inspect_vars(sim_df):
 
     cols_3 = ['cumm_finalized_blocks', 'cumm_empty_blocks'] # Count
 
-    cols_4 = ['market_price_juice_per_wei', 'oracle_price_juice_per_wei', ] # Juice per Wei
+    cols_4 = ['market_price_juice_per_gwei', 'oracle_price_juice_per_gwei', ] # Juice per Gwei
 
-    cols_5 = ['market_price_l1_gas', 'market_price_l1_blobgas', 'oracle_price_l1_gas', 'oracle_price_l1_blobgas'] # Wei per Gas
+    cols_5 = ['market_price_l1_gas', 'market_price_l1_blobgas', 'oracle_price_l1_gas', 'oracle_price_l1_blobgas'] # Gwei per Gas
 
     cols_6 = ['base_fee'] # Juice per Mana
 
-    cols_7 = ['oracle_proving_cost'] # Wei per Mana
+    cols_7 = ['oracle_proving_cost'] # Gwei per Mana
 
 
     N_subsets = 5
@@ -162,7 +162,7 @@ def plot_inspect_vars(sim_df):
         sns.lineplot(melted_df, x=X_COL, y='value', hue='variable', ax=ax)
         ax.grid()
         ax.set_yscale('linear')
-        ax.set_ylabel('Juice per Wei')
+        ax.set_ylabel('Juice per Gwei')
         if i < N_subsets - 1:
          ax.get_legend().remove()
 
@@ -190,7 +190,7 @@ def plot_inspect_vars(sim_df):
         sns.lineplot(melted_df, x=X_COL, y='value', hue='variable', ax=ax)
         ax.grid()
         # ax.set_yscale('log')
-        ax.set_ylabel('Wei per Mana')
+        ax.set_ylabel('Gwei per Mana')
         if i < N_subsets - 1:
          ax.get_legend().remove()
 

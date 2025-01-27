@@ -16,8 +16,8 @@ experiment_feemech_volatility = ExperimentParamSpec(
         'MAXIMUM_UPDATE_PERCENTAGE_C': [0.01, 0.03]
     },
     params_swept_env={
-        'JUICE_PER_WEI_MEAN': [1.1e-15, 10e-15],
-        'JUICE_PER_WEI_COV': [0.03, 0.30]
+        'JUICE_PER_GWEI_MEAN': [1.1e-15, 10e-15],
+        'JUICE_PER_GWEI_COV': [0.03, 0.30]
     },
     N_timesteps=3_000,
     N_samples=5,

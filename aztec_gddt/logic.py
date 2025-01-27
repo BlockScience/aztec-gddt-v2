@@ -381,22 +381,22 @@ def p_oracle_proving_cost(params: ModelParams, _2, _3, state: ModelState) -> dic
         MANA_PER_TX = params['RELATIVE_TARGET_MANA_PER_BLOCK'] * \
             params['MAXIMUM_MANA_PER_BLOCK'] / \
             params['AVERAGE_TX_COUNT_PER_SLOT']
-        WEI_PER_USD = (10 ** 18) / params['market_price_eth']
-        PROOF_COST_IN_WEI_PER_MANA = params['PROVING_COST_INITIAL_IN_USD_PER_TX_C'] * \
-            WEI_PER_USD / MANA_PER_TX
+        GWEI_PER_USD = (10 ** 18) / params['market_price_eth']
+        PROOF_COST_IN_GWEI_PER_MANA = params['PROVING_COST_INITIAL_IN_USD_PER_TX_C'] * \
+            GWEI_PER_USD / MANA_PER_TX
     else:
         relative_change = uniform(-params['MAXIMUM_UPDATE_PERCENTAGE_C'],
                                   params['MAXIMUM_UPDATE_PERCENTAGE_C'])
-        PROOF_COST_IN_WEI_PER_MANA = state['oracle_proving_cost'] * (
+        PROOF_COST_IN_GWEI_PER_MANA = state['oracle_proving_cost'] * (
             1 + relative_change)
 
-    return {'oracle_proving_cost': PROOF_COST_IN_WEI_PER_MANA}
+    return {'oracle_proving_cost': PROOF_COST_IN_GWEI_PER_MANA}
 
 
-p_oracle_juice_per_wei = generic_oracle(
-    'market_price_juice_per_wei',
-    'oracle_price_juice_per_wei',
-    'update_time_oracle_price_juice_per_wei',
+p_oracle_juice_per_gwei = generic_oracle(
+    'market_price_juice_per_gwei',
+    'oracle_price_juice_per_gwei',
+    'update_time_oracle_price_juice_per_gwei',
     'MAXIMUM_UPDATE_PERCENTAGE_C')
 
 p_oracle_l1_gas = generic_oracle(
@@ -461,13 +461,13 @@ def generic_gaussian_noise(var,
     return s_random_walk
 
 
-s_market_price_juice_per_wei = generic_gaussian_noise(
-    'market_price_juice_per_wei', 'JUICE_PER_WEI_MEAN', 'JUICE_PER_WEI_COV', False, min_value=0.0)
+s_market_price_juice_per_gwei = generic_gaussian_noise(
+    'market_price_juice_per_gwei', 'JUICE_PER_GWEI_MEAN', 'JUICE_PER_GWEI_COV', False, min_value=0.0)
 
 s_market_price_l1_gas = generic_gaussian_noise(
-    'market_price_l1_gas', 'WEI_PER_L1GAS_MEAN', 'WEI_PER_L1GAS_COV', True, min_value=1.0, max_rel_change=0.125)
+    'market_price_l1_gas', 'GWEI_PER_L1GAS_MEAN', 'GWEI_PER_L1GAS_COV', True, min_value=1.0, max_rel_change=0.125)
 s_market_price_l1_blobgas = generic_gaussian_noise(
-    'market_price_l1_blobgas', 'WEI_PER_L1BLOBGAS_MEAN', 'WEI_PER_L1BLOBGAS_COV', True, min_value=1.0, max_rel_change=0.125)
+    'market_price_l1_blobgas', 'GWEI_PER_L1BLOBGAS_MEAN', 'GWEI_PER_L1BLOBGAS_COV', True, min_value=1.0, max_rel_change=0.125)
 
 
 def replace_suf(variable: str, default_value=0.0):

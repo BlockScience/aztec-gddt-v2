@@ -13,16 +13,16 @@ Token = float
 ETH = float
 Fiat = float
 
-Wei = Annotated[int, 'wei']  # 1e-18 ETH
+Gwei = Annotated[int, 'gwei']  # 1e-18 ETH
 Gas = Annotated[int, 'gas']
-WeiPerGas = Annotated[float, 'wei/gas']
-WeiPerMana = Annotated[float, 'wei/mana']
-JuicePerWei = Annotated[float, 'juice/wei']
+GweiPerGas = Annotated[float, 'gwei/gas']
+GweiPerMana = Annotated[float, 'gwei/mana']
+JuicePerGwei = Annotated[float, 'juice/gwei']
 JuicePerMana = Annotated[float, 'juice/mana']
 
 USDPerETH = Annotated[float, 'usd/eth']
 
-Juice = Annotated[float, 'juice']  # Aztec's analogue to Wei
+Juice = Annotated[float, 'juice']  # Aztec's analogue to Gwei
 Mana = Annotated[int, 'mana']  # Aztec's analogue to Gas
 
 
@@ -94,16 +94,16 @@ class ModelState(TypedDict):
     last_reward_time_in_l1: BlocksL1
 
     # Market & Oracle Values
-    market_price_juice_per_wei: JuicePerWei
-    market_price_l1_gas: WeiPerGas
-    market_price_l1_blobgas: WeiPerGas
+    market_price_juice_per_gwei: JuicePerGwei
+    market_price_l1_gas: GweiPerGas
+    market_price_l1_blobgas: GweiPerGas
 
-    oracle_price_juice_per_wei: JuicePerWei
-    oracle_price_l1_gas: WeiPerGas
-    oracle_price_l1_blobgas: WeiPerGas
-    oracle_proving_cost: WeiPerMana
+    oracle_price_juice_per_gwei: JuicePerGwei
+    oracle_price_l1_gas: GweiPerGas
+    oracle_price_l1_blobgas: GweiPerGas
+    oracle_proving_cost: GweiPerMana
 
-    update_time_oracle_price_juice_per_wei: BlocksL1
+    update_time_oracle_price_juice_per_gwei: BlocksL1
     update_time_oracle_price_l1_gas: BlocksL1
     update_time_oracle_price_l1_blobgas: BlocksL1
     
@@ -168,15 +168,15 @@ class ModelParams(TypedDict):
     PROVING_COST_MODIFICATION_E: Percentage  # env, sweep
     FEE_JUICE_PRICE_MODIFICATION_E: Percentage  # env, sweep
     ORACLE_UPDATE_FREQUENCY_E: Percentage  # env, sweep
-    JUICE_PER_WEI_MEAN: JuicePerWei
-    JUICE_PER_WEI_COV: JuicePerWei
+    JUICE_PER_GWEI_MEAN: JuicePerGwei
+    JUICE_PER_GWEI_COV: JuicePerGwei
     MAX_FEE_INFLATION_RELATIVE_MEAN: Percentage
     MAX_FEE_INFLATION_RELATIVE_STD: Percentage
 
-    WEI_PER_L1GAS_MEAN: WeiPerGas
-    WEI_PER_L1GAS_COV: Percentage
-    WEI_PER_L1BLOBGAS_MEAN: WeiPerGas
-    WEI_PER_L1BLOBGAS_COV: Percentage
+    GWEI_PER_L1GAS_MEAN: GweiPerGas
+    GWEI_PER_L1GAS_COV: Percentage
+    GWEI_PER_L1BLOBGAS_MEAN: GweiPerGas
+    GWEI_PER_L1BLOBGAS_COV: Percentage
 
     # Exogenous
     market_price_eth: USDPerETH

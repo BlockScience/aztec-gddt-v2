@@ -106,10 +106,10 @@ def raw_base_fee(
         target_mana_per_block: Mana,
 
         # Oracle / Contract related
-        l1_gas_price: WeiPerGas,
-        l1_blobgas_price: WeiPerGas,
-        juice_per_wei_price: JuicePerWei,
-        proving_cost_per_mana_in_wei: WeiPerMana,
+        l1_gas_price: GweiPerGas,
+        l1_blobgas_price: GweiPerGas,
+        juice_per_gwei_price: JuicePerGwei,
+        proving_cost_per_mana_in_gwei: GweiPerMana,
         congestion_multiplier: float,
 
         # Tx related
@@ -118,19 +118,19 @@ def raw_base_fee(
         l1_blobgas_per_block: Gas
 ) -> JuicePerMana:
 
-    l1_gas_cost_in_wei_per_l2block: Wei = l1_gas_per_block * l1_gas_price
-    l1_da_cost_in_wei_per_l2block: Wei = l1_blobgas_per_block * l1_blobgas_price
+    l1_gas_cost_in_gwei_per_l2block: Gwei = l1_gas_per_block * l1_gas_price
+    l1_da_cost_in_gwei_per_l2block: Gwei = l1_blobgas_per_block * l1_blobgas_price
 
-    l1_cost_in_wei_per_l2block: Wei = l1_gas_cost_in_wei_per_l2block + \
-        l1_da_cost_in_wei_per_l2block
+    l1_cost_in_gwei_per_l2block: Gwei = l1_gas_cost_in_gwei_per_l2block + \
+        l1_da_cost_in_gwei_per_l2block
 
-    l1_cost_per_mana_in_wei: WeiPerMana = l1_cost_in_wei_per_l2block / target_mana_per_block
+    l1_cost_per_mana_in_gwei: GweiPerMana = l1_cost_in_gwei_per_l2block / target_mana_per_block
 
-    wei_per_mana = l1_cost_per_mana_in_wei + proving_cost_per_mana_in_wei
+    gwei_per_mana = l1_cost_per_mana_in_gwei + proving_cost_per_mana_in_gwei
 
-    base_fee_in_wei_per_mana: WeiPerMana = wei_per_mana * congestion_multiplier
+    base_fee_in_gwei_per_mana: GweiPerMana = gwei_per_mana * congestion_multiplier
 
-    base_fee_in_juice_per_mana: JuicePerMana = base_fee_in_wei_per_mana * juice_per_wei_price
+    base_fee_in_juice_per_mana: JuicePerMana = base_fee_in_gwei_per_mana * juice_per_gwei_price
 
     return base_fee_in_juice_per_mana
 
@@ -144,37 +144,37 @@ def excess_mana_fn(past_excess: Mana,
         return 0
 
 
-def proving_cost_fn(minimum_proving_cost_wei_per_mana: WeiPerMana,
+def proving_cost_fn(minimum_proving_cost_gwei_per_mana: GweiPerMana,
                     proving_cost_modifier: float,
-                    proving_cost_update_fraction: float) -> WeiPerMana:
+                    proving_cost_update_fraction: float) -> GweiPerMana:
     exp_term = math.exp(proving_cost_modifier / proving_cost_update_fraction)
 
     # TODO: include logic for bounding the update to a min-max range.
 
-    return minimum_proving_cost_wei_per_mana * exp_term
+    return minimum_proving_cost_gwei_per_mana * exp_term
 
 
-def juice_per_wei_price_fn(minimum_fee_asset_per_wei: JuicePerWei,
+def juice_per_gwei_price_fn(minimum_fee_asset_per_gwei: JuicePerGwei,
                            fee_juice_price_modifier: float,
-                           fee_asset_per_wei_update_fraction: float,
-                           old_juice_per_wei_price: JuicePerWei,
-                           max_fee_juice_price_relative_change: Percentage) -> JuicePerWei:
+                           fee_asset_per_gwei_update_fraction: float,
+                           old_juice_per_gwei_price: JuicePerGwei,
+                           max_fee_juice_price_relative_change: Percentage) -> JuicePerGwei:
 
     exp_term = math.exp(fee_juice_price_modifier /
-                        fee_asset_per_wei_update_fraction)
-    new_juice_per_wei_price: JuicePerWei = minimum_fee_asset_per_wei * exp_term
+                        fee_asset_per_gwei_update_fraction)
+    new_juice_per_gwei_price: JuicePerGwei = minimum_fee_asset_per_gwei * exp_term
 
-    max_price: JuicePerWei = old_juice_per_wei_price * \
+    max_price: JuicePerGwei = old_juice_per_gwei_price * \
         (1 + max_fee_juice_price_relative_change)
-    min_price: JuicePerWei = old_juice_per_wei_price * \
+    min_price: JuicePerGwei = old_juice_per_gwei_price * \
         (1 - max_fee_juice_price_relative_change)
 
-    if new_juice_per_wei_price > max_price:
+    if new_juice_per_gwei_price > max_price:
         return max_price
-    elif new_juice_per_wei_price < min_price:
+    elif new_juice_per_gwei_price < min_price:
         return min_price
     else:
-        return new_juice_per_wei_price
+        return new_juice_per_gwei_price
 
 
 def compute_base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
@@ -186,8 +186,8 @@ def compute_base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
         params['L1_GAS_TO_VERIFY'] / params['L2_SLOTS_PER_L2_EPOCH'])
     l1_blobgas_per_block: Gas = params['L1_BLOBGAS_PER_BLOB'] * \
         params['BLOBS_PER_BLOCK']
-    juice_per_wei_price = state['oracle_price_juice_per_wei']
-    proving_cost_per_mana_in_wei = state['oracle_proving_cost']
+    juice_per_gwei_price = state['oracle_price_juice_per_gwei']
+    proving_cost_per_mana_in_gwei = state['oracle_proving_cost']
     congestion_multiplier = state['congestion_multiplier']
 
     return raw_base_fee(
@@ -195,8 +195,8 @@ def compute_base_fee(params: ModelParams, state: ModelState) -> JuicePerMana:
 
         l1_gas_price=state['oracle_price_l1_gas'],
         l1_blobgas_price=state['oracle_price_l1_blobgas'],
-        juice_per_wei_price=juice_per_wei_price,
-        proving_cost_per_mana_in_wei=proving_cost_per_mana_in_wei,
+        juice_per_gwei_price=juice_per_gwei_price,
+        proving_cost_per_mana_in_gwei=proving_cost_per_mana_in_gwei,
         congestion_multiplier=congestion_multiplier,
 
         blobs_per_block=params['BLOBS_PER_BLOCK'],
@@ -212,8 +212,8 @@ def l2_block_cost_for_sequencer(params: ModelParams, state: ModelState) -> Juice
     l1_gas_per_block: Gas = params['L1_GAS_TO_PUBLISH'] + l1_gas_for_da
     l1_blobgas_per_block: Gas = params['L1_BLOBGAS_PER_BLOB'] * \
         params['BLOBS_PER_BLOCK']
-    juice_per_wei_price = state['market_price_juice_per_wei']
-    proving_cost_per_mana_in_wei = 0.0
+    juice_per_gwei_price = state['market_price_juice_per_gwei']
+    proving_cost_per_mana_in_gwei = 0.0
     congestion_multiplier = 1.0
 
     return raw_base_fee(
@@ -221,8 +221,8 @@ def l2_block_cost_for_sequencer(params: ModelParams, state: ModelState) -> Juice
 
         l1_gas_price=state['market_price_l1_gas'],
         l1_blobgas_price=state['market_price_l1_blobgas'],
-        juice_per_wei_price=juice_per_wei_price,
-        proving_cost_per_mana_in_wei=proving_cost_per_mana_in_wei,
+        juice_per_gwei_price=juice_per_gwei_price,
+        proving_cost_per_mana_in_gwei=proving_cost_per_mana_in_gwei,
         congestion_multiplier=congestion_multiplier,
 
         blobs_per_block=params['BLOBS_PER_BLOCK'],
