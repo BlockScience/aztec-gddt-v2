@@ -53,7 +53,7 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
 
         if l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_VALIDATE:
             curr_slot.has_validator_signatures = True
-
+            
         if l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_PROPOSE:
 
             if not(state['market_price_l1_gas'] > params['SEQUENCER_L1_GAS_PRICE_THRESHOLD_E']):

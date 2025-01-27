@@ -135,6 +135,7 @@ class ModelParams(TypedDict):
     L1_SLOTS_PER_L2_SLOT: BlocksL1  # fixed
     PROVER_SEARCH_PERIOD: BlocksL2  # fixed
     MIN_ORACLE_UPDATE_LAG_C: BlocksL1
+    SIGNATURED_NEEDED_PERCENTAGE_C: Percentage
 
     ### Fee ###
     RELATIVE_TARGET_MANA_PER_BLOCK: Percentage  # sweep, relative to the maximum mana per block
@@ -179,6 +180,7 @@ class ModelParams(TypedDict):
     GWEI_PER_L1BLOBGAS_COV: Percentage
     SEQUENCER_L1_GAS_PRICE_THRESHOLD_E: Gwei
     TOTAL_MANA_MULTIPLIER_E: Percentage
+    PROBABILITY_SLASHABLE_ACTION_E: Percentage
 
     # Exogenous
     market_price_eth: USDPerETH

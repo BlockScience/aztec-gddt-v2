@@ -86,6 +86,7 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              L1_SLOTS_PER_L2_SLOT=3,
                              PROVER_SEARCH_PERIOD=13,
                              MIN_ORACLE_UPDATE_LAG_C=5,
+                             SIGNATURED_NEEDED_PERCENTAGE_C=0.51,
 
                              ### Fee ###
                              RELATIVE_TARGET_MANA_PER_BLOCK=0.5,
@@ -131,6 +132,7 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              GWEI_PER_L1BLOBGAS_COV=0.05,
                              SEQUENCER_L1_GAS_PRICE_THRESHOLD_E=float('nan'),
                              TOTAL_MANA_MULTIPLIER_E=1.0,
+                             PROBABILITY_SLASHABLE_ACTION_E=float('nan'),
 
                              # Exogenous
                              market_price_eth=3300,

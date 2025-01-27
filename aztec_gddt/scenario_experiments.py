@@ -87,8 +87,8 @@ experiment_feemech_oracle_sensitivity = ExperimentParamSpec(
 experiment_stakeslash_resume_inactivity = ExperimentParamSpec(
     params_swept_control={
         'PERCENTAGE_STAKE_SLASHED_C': [0.00, 0.10, 1.00],
-        'VALIDATOR_COMMITTEE_SIZE_C': [128, 256, 512],
-        'SIGNATURED_NEEDED_PERCENTAGE_C': [0.51, 0.98]
+        'VALIDATOR_COMMITTEE_SIZE': [128, 256, 512],
+        'SIGNATURED_NEEDED_PERCENTAGE_C': [0.33, 0.50, 0.66]
     },
     params_swept_env={
         'PROBABILITY_SLASHABLE_ACTION_E': [0.00_1, 0.01_0, 0.10_0]
@@ -104,8 +104,8 @@ experiment_stakeslash_resume_inactivity = ExperimentParamSpec(
 experiment_stakeslash_validator_eject = ExperimentParamSpec(
     params_swept_control={
         'PERCENTAGE_STAKE_SLASHED_C': [0.00, 0.10, 1.00],
-        'VALIDATOR_COMMITTEE_SIZE_C': [128, 256, 512],
-        'SIGNATURED_NEEDED_PERCENTAGE_C': [0.51, 0.98]
+        'VALIDATOR_COMMITTEE_SIZE': [128, 256, 512],
+        'SIGNATURED_NEEDED_PERCENTAGE_C': 0.33, 0.50, 0.66]
     },
     params_swept_env={
         'PROBABILITY_SLASHABLE_ACTION_E': [0.00_1, 0.01_0, 0.10_0]
