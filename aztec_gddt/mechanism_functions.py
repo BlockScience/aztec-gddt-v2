@@ -119,8 +119,7 @@ def raw_base_fee(
 ) -> JuicePerMana:
 
     l1_gas_cost_in_wei_per_l2block: Wei = l1_gas_per_block * l1_gas_price
-    l1_da_cost_in_wei_per_l2block: Wei = blobs_per_block * \
-        l1_blobgas_per_block * l1_blobgas_price
+    l1_da_cost_in_wei_per_l2block: Wei = l1_blobgas_per_block * l1_blobgas_price
 
     l1_cost_in_wei_per_l2block: Wei = l1_gas_cost_in_wei_per_l2block + \
         l1_da_cost_in_wei_per_l2block
