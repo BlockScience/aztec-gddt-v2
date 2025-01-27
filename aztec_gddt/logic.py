@@ -67,15 +67,14 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
             # XXX: assume that base fee is computed when block is proposed
             # FIXME
 
-            
             past_past_base_fee = history[-2][-1]['base_fee']
             past_base_fee = history[-1][-1]['base_fee']
 
             if ~np.isnan(past_past_base_fee):
-                inflation_estimate = (history[-1][-1]['base_fee'] / history[-2][-1]['base_fee']) - 1
+                inflation_estimate = (
+                    history[-1][-1]['base_fee'] / history[-2][-1]['base_fee']) - 1
             else:
                 inflation_estimate = 1.0
-            
 
             max_fee: JuicePerMana = (
                 1 + inflation_estimate) * past_base_fee
@@ -84,7 +83,6 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
                 1 + inflation_estimate * params['MAX_FEE_INFLATION_RELATIVE_MEAN']) * past_base_fee
 
             max_fee_std = params['MAX_FEE_INFLATION_RELATIVE_STD'] * max_fee
-            
 
             max_fees = st.norm.rvs(loc=max_fee_avg,
                                    scale=max_fee_std,
@@ -94,21 +92,22 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
 
             inds_valid_due_to_profitability = expected_profit_per_tx(
                 params, state, max_fees, 0.00, total_tx) > 0
-            
-            passively_excl_inds = np.bitwise_not(inds_valid_due_to_max_above_base)
-            actively_excl_inds = np.bitwise_not(inds_valid_due_to_profitability) & np.bitwise_not(passively_excl_inds)
 
+            passively_excl_inds = np.bitwise_not(
+                inds_valid_due_to_max_above_base)
+            actively_excl_inds = np.bitwise_not(
+                inds_valid_due_to_profitability) & np.bitwise_not(passively_excl_inds)
 
-            valid_inds = np.bitwise_not(passively_excl_inds | actively_excl_inds)
+            valid_inds = np.bitwise_not(
+                passively_excl_inds | actively_excl_inds)
 
             excl_tx = np.sum(passively_excl_inds)
             dropped_tx = np.sum(actively_excl_inds)  # type: ignore
 
             curr_slot.tx_total_mana = (
                 total_tx - excl_tx - dropped_tx) * params['OVERHEAD_MANA_PER_TX']
-            
+
             curr_slot.tx_total_fee = max_fees[valid_inds].sum()
-            
 
     else:
         # If slot time has expired
@@ -424,19 +423,39 @@ def generic_random_walk(var, mu, std, do_round=True):
     return s_random_walk
 
 
-def generic_gaussian_noise(var, mu_param, cov_param, do_round=True, min_value=0.0):
+def generic_gaussian_noise(var,
+                           mu_param,
+                           cov_param,
+                           do_round=True,
+                           min_value=0.0,
+                           max_rel_change=float('nan')):
     def s_random_walk(params, _2, _3, state: dict, signal) -> tuple:
-
 
         if state['timestep'] <= 1:
             raw_value = params[mu_param]
         else:
-            raw_value = max(state[var] + normalvariate(0, params[mu_param] * params[cov_param]), min_value)
-        
+            raw_value = max(
+                state[var] + normalvariate(0, params[mu_param] * params[cov_param]), min_value)
+
         if do_round:
             value = round(raw_value)  # type: ignore
         else:
             value = raw_value  # type: ignore
+
+
+        if np.isfinite(max_rel_change):
+            past_value = state[var]
+
+            lower_bound = past_value * (1 - max_rel_change)
+            upper_bound = past_value * (1 + max_rel_change)
+            if value < lower_bound:
+                value = lower_bound
+            elif value > upper_bound:
+                value = upper_bound
+            else:
+                pass
+        else:
+            pass
 
         return (var, value)
     return s_random_walk
@@ -446,9 +465,9 @@ s_market_price_juice_per_wei = generic_gaussian_noise(
     'market_price_juice_per_wei', 'JUICE_PER_WEI_MEAN', 'JUICE_PER_WEI_COV', False, min_value=0.0)
 
 s_market_price_l1_gas = generic_gaussian_noise(
-    'market_price_l1_gas', 'WEI_PER_L1GAS_MEAN', 'WEI_PER_L1GAS_COV', True, min_value=1.0)
+    'market_price_l1_gas', 'WEI_PER_L1GAS_MEAN', 'WEI_PER_L1GAS_COV', True, min_value=1.0, max_rel_change=0.125)
 s_market_price_l1_blobgas = generic_gaussian_noise(
-    'market_price_l1_blobgas', 'WEI_PER_L1BLOBGAS_MEAN', 'WEI_PER_L1BLOBGAS_COV', True, min_value=1.0)
+    'market_price_l1_blobgas', 'WEI_PER_L1BLOBGAS_MEAN', 'WEI_PER_L1BLOBGAS_COV', True, min_value=1.0, max_rel_change=0.125)
 
 
 def replace_suf(variable: str, default_value=0.0):
