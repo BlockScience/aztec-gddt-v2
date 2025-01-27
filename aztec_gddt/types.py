@@ -75,7 +75,7 @@ class Epoch():
 @dataclass
 class Agent():
     uuid: AgentUUID
-    commitment_bond: Token
+    stake: Token
     score: float
 
 

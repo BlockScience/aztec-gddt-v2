@@ -158,7 +158,7 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
 
             # N validators are drawn (based on score) to the validator committee from the validator set (i.e. from the set of staked users)
             validator_set = [a for a in state['agents']
-                             if a.commitment_bond >= params['BOND_SIZE']]
+                             if a.stake >= params['BOND_SIZE']]
             ordered_validator_set = sorted(validator_set,
                                            key=lambda x: x.score,
                                            reverse=True)
@@ -267,13 +267,16 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                 if t < epoch.time_until_E_EPOCH_QUOTE_ACCEPT:
                     # Create quotes while no one is accepted
 
+                    # agent = sample(population=state['agents'], k=1)[0]
+
                     # XXX
                     # Assume that each timestep
                     # a agent quotes between 0% and 50%
-                    # FIXME
-                    agent = sample(population=state['agents'], k=1)[0]
+                    
+                    # 27Jan: draw from prover agent
+                    prover_uuid = 'prover'
                     quote = uniform(0.0, 0.5)
-                    epoch.prover_quotes[agent.uuid] = quote
+                    epoch.prover_quotes[prover_uuid] = quote
                 else:
                     # If time for acceptance is over, then
                     if len(epoch.prover_quotes) > 0:
