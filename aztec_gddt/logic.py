@@ -105,7 +105,7 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
             dropped_tx = np.sum(actively_excl_inds)  # type: ignore
 
             curr_slot.tx_total_mana = (
-                total_tx - excl_tx - dropped_tx) * params['OVERHEAD_MANA_PER_TX']
+                total_tx - excl_tx - dropped_tx) * params['OVERHEAD_MANA_PER_TX'] * params['TOTAL_MANA_MULTIPLIER_E']
 
             curr_slot.tx_total_fee = max_fees[valid_inds].sum()
 

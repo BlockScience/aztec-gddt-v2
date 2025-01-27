@@ -129,6 +129,7 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              GWEI_PER_L1GAS_COV=0.01,
                              GWEI_PER_L1BLOBGAS_MEAN=5,
                              GWEI_PER_L1BLOBGAS_COV=0.05,
+                             TOTAL_MANA_MULTIPLIER_E=1.0,
 
                              # Exogenous
                              market_price_eth=3300,

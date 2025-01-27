@@ -177,6 +177,7 @@ class ModelParams(TypedDict):
     GWEI_PER_L1GAS_COV: Percentage
     GWEI_PER_L1BLOBGAS_MEAN: GweiPerGas
     GWEI_PER_L1BLOBGAS_COV: Percentage
+    TOTAL_MANA_MULTIPLIER_E: Percentage
 
     # Exogenous
     market_price_eth: USDPerETH
