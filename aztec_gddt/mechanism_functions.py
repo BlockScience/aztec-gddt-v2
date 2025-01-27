@@ -239,5 +239,5 @@ def expected_profit_per_tx(params: ModelParams,
                            tx_count: int) -> Juice:
     expected_cost_per_tx = l2_block_cost_for_sequencer(
         params, state) / tx_count # type: ignore
-    expected_revenue_per_tx = max_fee * (1 - prover_quote)
+    expected_revenue_per_tx = state['base_fee'] * (1 - prover_quote)
     return expected_revenue_per_tx - expected_cost_per_tx

@@ -22,7 +22,7 @@ JuicePerMana = Annotated[float, 'juice/mana']
 
 USDPerETH = Annotated[float, 'usd/eth']
 
-Juice = Annotated[int, 'juice']  # Aztec's analogue to Wei
+Juice = Annotated[float, 'juice']  # Aztec's analogue to Wei
 Mana = Annotated[int, 'mana']  # Aztec's analogue to Gas
 
 
