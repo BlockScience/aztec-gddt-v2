@@ -210,8 +210,7 @@ def l2_block_cost_for_sequencer(params: ModelParams, state: ModelState) -> Juice
     l1_gas_for_da: Gas = params['BLOBS_PER_BLOCK'] * \
         params['POINT_EVALUATION_PRECOMIPLE_GAS']
 
-    l1_gas_per_block: Gas = params['L1_GAS_TO_PUBLISH'] + l1_gas_for_da + int(
-        params['L1_GAS_TO_VERIFY'] / params['L2_SLOTS_PER_L2_EPOCH'])
+    l1_gas_per_block: Gas = params['L1_GAS_TO_PUBLISH'] + l1_gas_for_da
     l1_blobgas_per_block: Gas = params['L1_BLOBGAS_PER_BLOB'] * \
         params['BLOBS_PER_BLOCK']
     juice_per_wei_price = state['market_price_juice_per_wei']
