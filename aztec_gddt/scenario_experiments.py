@@ -124,7 +124,7 @@ experiment_l2_congestion = ExperimentParamSpec(
     },
     params_swept_env={
         'SEQUENCER_L1_GAS_PRICE_THRESHOLD_E': ['low', 'high'],
-        'TOTAL_MANA_MULTIPLIER': [1.0, 10.0]
+        'TOTAL_MANA_MULTIPLIER_E': [1.0, 10.0]
     },
     N_timesteps=3_000,
     N_samples=50,
