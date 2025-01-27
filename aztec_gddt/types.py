@@ -13,7 +13,7 @@ Token = float
 ETH = float
 Fiat = float
 
-Gwei = Annotated[int, 'gwei']  # 1e-18 ETH
+Gwei = Annotated[float, 'gwei']  # 1e-18 ETH
 Gas = Annotated[int, 'gas']
 GweiPerGas = Annotated[float, 'gwei/gas']
 GweiPerMana = Annotated[float, 'gwei/mana']
@@ -177,6 +177,7 @@ class ModelParams(TypedDict):
     GWEI_PER_L1GAS_COV: Percentage
     GWEI_PER_L1BLOBGAS_MEAN: GweiPerGas
     GWEI_PER_L1BLOBGAS_COV: Percentage
+    SEQUENCER_L1_GAS_PRICE_THRESHOLD_E: Gwei
     TOTAL_MANA_MULTIPLIER_E: Percentage
 
     # Exogenous

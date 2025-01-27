@@ -123,7 +123,7 @@ experiment_l2_congestion = ExperimentParamSpec(
         'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000],
     },
     params_swept_env={
-        'SEQUENCER_L1_GAS_PRICE_THRESHOLD_E': ['low', 'high'],
+        'SEQUENCER_L1_GAS_PRICE_THRESHOLD_E': [100, 1_000],
         'TOTAL_MANA_MULTIPLIER_E': [1.0, 10.0]
     },
     N_timesteps=3_000,

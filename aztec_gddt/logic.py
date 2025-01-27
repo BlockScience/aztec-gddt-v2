@@ -2,6 +2,7 @@ from aztec_gddt.types import *
 from copy import deepcopy, copy
 from random import sample, random, uniform, normalvariate
 import numpy as np
+import numpy.typing as npt
 import scipy.stats as st
 from aztec_gddt.types import Slot
 from aztec_gddt.mechanism_functions import block_reward, compute_base_fee, expected_profit_per_tx, target_mana_per_block, proving_cost_fn
@@ -54,61 +55,62 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
             curr_slot.has_validator_signatures = True
 
         if l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_PROPOSE:
-            curr_slot.has_proposal_on_network = True
 
-            # XXX consider using a random distribution
-            curr_slot.tx_count = params['AVERAGE_TX_COUNT_PER_SLOT']
-            total_tx += curr_slot.tx_count
-            # # XXX consider adding a random term
-            # curr_slot.tx_total_mana = curr_slot.tx_count * \
-            #     params['general'].OVERHEAD_MANA_PER_TX
-            # HACK
+            if not(state['market_price_l1_gas'] > params['SEQUENCER_L1_GAS_PRICE_THRESHOLD_E']):
+                curr_slot.has_proposal_on_network = True
 
-            # XXX: assume that base fee is computed when block is proposed
-            # FIXME
+                # XXX consider using a random distribution
+                curr_slot.tx_count = params['AVERAGE_TX_COUNT_PER_SLOT']
+                total_tx += curr_slot.tx_count
+                # # XXX consider adding a random term
+                # curr_slot.tx_total_mana = curr_slot.tx_count * \
+                #     params['general'].OVERHEAD_MANA_PER_TX
+                # HACK
 
-            past_past_base_fee = history[-2][-1]['base_fee']
-            past_base_fee = history[-1][-1]['base_fee']
+                # XXX: assume that base fee is computed when block is proposed
+                # FIXME
 
-            if ~np.isnan(past_past_base_fee):
-                inflation_estimate = (
-                    history[-1][-1]['base_fee'] / history[-2][-1]['base_fee']) - 1
-            else:
-                inflation_estimate = 1.0
+                past_past_base_fee = history[-2][-1]['base_fee']
+                past_base_fee = history[-1][-1]['base_fee']
 
-            max_fee: JuicePerMana = (
-                1 + inflation_estimate) * past_base_fee
+                if ~np.isnan(past_past_base_fee):
+                    inflation_estimate = (
+                        history[-1][-1]['base_fee'] / history[-2][-1]['base_fee']) - 1
+                else:
+                    inflation_estimate = 1.0
 
-            max_fee_avg = (
-                1 + inflation_estimate * params['MAX_FEE_INFLATION_RELATIVE_MEAN']) * past_base_fee
+                max_fee: JuicePerMana = (
+                    1 + inflation_estimate) * past_base_fee
 
-            max_fee_std = params['MAX_FEE_INFLATION_RELATIVE_STD'] * max_fee
+                max_fee_avg = (
+                    1 + inflation_estimate * params['MAX_FEE_INFLATION_RELATIVE_MEAN']) * past_base_fee
 
-            max_fees = st.norm.rvs(loc=max_fee_avg,
-                                   scale=max_fee_std,
-                                   size=[total_tx])
+                max_fee_std = params['MAX_FEE_INFLATION_RELATIVE_STD'] * max_fee
 
-            inds_valid_due_to_max_above_base = max_fees > base_fee
+                max_fees: npt.ArrayLike = st.norm.rvs(loc=max_fee_avg,
+                                    scale=max_fee_std,
+                                    size=[total_tx])
 
-            inds_valid_due_to_profitability = expected_profit_per_tx(
-                params, state, max_fees, 0.00, total_tx) > 0
+                inds_valid_due_to_max_above_base = max_fees > base_fee
 
-            passively_excl_inds = np.bitwise_not(
-                inds_valid_due_to_max_above_base)
-            actively_excl_inds = np.bitwise_not(
-                inds_valid_due_to_profitability) & np.bitwise_not(passively_excl_inds)
+                inds_valid_due_to_profitability = expected_profit_per_tx(
+                    params, state, max_fees, 0.00, total_tx) > 0
 
-            valid_inds = np.bitwise_not(
-                passively_excl_inds | actively_excl_inds)
+                passively_excl_inds = np.bitwise_not(
+                    inds_valid_due_to_max_above_base)
+                actively_excl_inds = np.bitwise_not(
+                    inds_valid_due_to_profitability) & np.bitwise_not(passively_excl_inds)
 
-            excl_tx = np.sum(passively_excl_inds)
-            dropped_tx = np.sum(actively_excl_inds)  # type: ignore
+                valid_inds = np.bitwise_not(
+                    passively_excl_inds | actively_excl_inds)
 
-            curr_slot.tx_total_mana = (
-                total_tx - excl_tx - dropped_tx) * params['OVERHEAD_MANA_PER_TX'] * params['TOTAL_MANA_MULTIPLIER_E']
+                excl_tx = np.sum(passively_excl_inds)
+                dropped_tx = np.sum(actively_excl_inds)  # type: ignore
 
-            curr_slot.tx_total_fee = max_fees[valid_inds].sum()
+                curr_slot.tx_total_mana = (
+                    total_tx - excl_tx - dropped_tx) * params['OVERHEAD_MANA_PER_TX'] * params['TOTAL_MANA_MULTIPLIER_E']
 
+                curr_slot.tx_total_fee = max_fees[valid_inds].sum() # type: ignore
     else:
         # If slot time has expired
         # then check whatever there's still
