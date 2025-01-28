@@ -146,6 +146,7 @@ class ModelParams(TypedDict):
     L1_BLOBGAS_PER_BLOB: Gas
     POINT_EVALUATION_PRECOMIPLE_GAS: Gas
     MINIMUM_MULTIPLIER_CONGESTION: float # sweep
+    MAXIMUM_MULTIPLIER_CONGESTION_RATIO: float # XXX
     RELATIVE_UPDATE_FRACTION_CONGESTION: float # sweep, relative to the maximum mana per block
     MAX_RELATIVE_CHANGE_CONGESTION: Percentage
     MAXIMUM_UPDATE_PERCENTAGE_C: Percentage

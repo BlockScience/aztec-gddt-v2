@@ -97,6 +97,7 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              L1_BLOBGAS_PER_BLOB=int(2 ** 17),  # fixed, ~131k
                              POINT_EVALUATION_PRECOMIPLE_GAS=50_000,  # fixed
                              MINIMUM_MULTIPLIER_CONGESTION=4_000_000,  # sweep
+                             MAXIMUM_MULTIPLIER_CONGESTION_RATIO=10, # XXX, roughly equivalent to a max increase of 22026x
                              RELATIVE_UPDATE_FRACTION_CONGESTION=0.5,  # sweep
                              MAX_RELATIVE_CHANGE_CONGESTION=0.03,  # TODO
                              MAXIMUM_UPDATE_PERCENTAGE_C=0.03,

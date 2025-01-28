@@ -72,6 +72,11 @@ def execute_sim(exp_wrapper: ExperimentWrapper) -> tuple[pd.DataFrame, Execution
 
     sim_df = df
     exec_time.after_proc = time()
+
+
+    # Post Processing Metrics
+    sim_df['normed_congestion_multiplier'] = sim_df['congestion_multiplier'] / sim_df['MINIMUM_MULTIPLIER_CONGESTION']
+
     return sim_df, exec_time
 
 def complexity_desc(sim_df: pd.DataFrame, exec_time: ExecutionTime) -> str:

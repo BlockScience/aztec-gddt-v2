@@ -363,7 +363,15 @@ def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, sign
         update_frac = params['RELATIVE_UPDATE_FRACTION_CONGESTION'] * \
             params['MAXIMUM_MANA_PER_BLOCK']
         multiplier = params['MINIMUM_MULTIPLIER_CONGESTION']
-        multiplier *= math.exp(state['excess_mana'] / update_frac)
+
+
+        raw_ratio = state['excess_mana'] / update_frac
+        max_ratio = params['MAXIMUM_MULTIPLIER_CONGESTION_RATIO']
+        if raw_ratio > max_ratio:
+            effective_ratio = max_ratio
+        else:
+            effective_ratio = raw_ratio
+        multiplier *= math.exp(effective_ratio)
 
         if multiplier > upper_multiplier:
             multiplier = upper_multiplier

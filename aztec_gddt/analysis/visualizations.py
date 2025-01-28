@@ -113,9 +113,11 @@ def plot_inspect_vars(sim_df):
 
     cols_7 = ['oracle_proving_cost'] # Gwei per Mana
 
+    cols_8 = ['normed_congestion_multiplier'] 
+
 
     N_subsets = 5
-    N_cols = 7
+    N_cols = 8
     size_per_col = 6
     size_per_row = 3
 
@@ -191,6 +193,15 @@ def plot_inspect_vars(sim_df):
         ax.grid()
         # ax.set_yscale('log')
         ax.set_ylabel('Gwei per Mana')
+        if i < N_subsets - 1:
+         ax.get_legend().remove()
+
+        ax = axes[i][7]
+        melted_df = traj_df.reset_index().melt(id_vars=[X_COL], value_vars=cols_8)
+        sns.lineplot(melted_df, x=X_COL, y='value', hue='variable', ax=ax)
+        ax.grid()
+        # ax.set_yscale('log')
+        ax.set_ylabel('Unitless')
         if i < N_subsets - 1:
          ax.get_legend().remove()
 
