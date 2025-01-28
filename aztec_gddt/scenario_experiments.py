@@ -81,8 +81,8 @@ experiment_feemech_oracle_sensitivity = ExperimentParamSpec(
     N_timesteps=3_000,
     N_samples=100,
     N_config_sample=-1,
-    relevant_per_trajectory_metrics=['T-M8a', 'T-M8b', 'T-M9'],
-    relevant_per_trajectory_group_metrics=['TG-M7', 'TG-M8a', 'TG-M8b'],
+    relevant_per_trajectory_metrics=['T-M7a', 'T-M7b', 'T-M8'],
+    relevant_per_trajectory_group_metrics=['TG-M8a', 'TG-M8b', 'TG-M9'],
 )
 
 experiment_stakeslash_resume_inactivity = ExperimentParamSpec(

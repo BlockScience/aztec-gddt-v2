@@ -55,7 +55,10 @@ def average_base_fee_divided_by_oracle_parameter(traj_df: pd.DataFrame,
 
 
 def counterfactual_sequencer_losses_due_to_lag(traj_df: pd.DataFrame) -> float:
-    return float('nan')
+    # XXX
+    gwei_per_mana_market = traj_df['base_fee'] / traj_df['market_price_juice_per_gwei']
+    gwei_per_mana_oracle = traj_df['base_fee'] / traj_df['oracle_price_juice_per_gwei']
+    return (gwei_per_mana_market - gwei_per_mana_oracle).mean()
 
 
 def network_resumed_finalization_following_inactivity(traj_df: pd.DataFrame) -> bool:

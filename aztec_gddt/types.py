@@ -91,7 +91,7 @@ class ModelState(TypedDict):
     last_epoch: Epoch
 
     # Block Reward related values
-    last_reward: Token
+    last_reward: Juice
     last_reward_time_in_l1: BlocksL1
 
     # Market & Oracle Values
