@@ -89,10 +89,10 @@ experiment_stakeslash_resume_inactivity = ExperimentParamSpec(
     params_swept_control={
         'PERCENTAGE_STAKE_SLASHED_C': [0.00, 0.10, 1.00],
         'VALIDATOR_COMMITTEE_SIZE': [128, 256, 512],
-        'SIGNATURED_NEEDED_PERCENTAGE_C': [0.33, 0.50, 0.66]
+        'SIGNATURES_NEEDED': [0.33, 0.50, 0.66]
     },
     params_swept_env={
-        'PROBABILITY_SLASHABLE_ACTION_E': [0.00_1, 0.01_0, 0.10_0]
+        'SIGNATURE_SKIP_PROBABILITY': [0.00, 0.02]
     },
     N_timesteps=3_000,
     N_samples=50,
@@ -106,10 +106,10 @@ experiment_stakeslash_validator_eject = ExperimentParamSpec(
     params_swept_control={
         'PERCENTAGE_STAKE_SLASHED_C': [0.00, 0.10, 1.00],
         'VALIDATOR_COMMITTEE_SIZE': [128, 256, 512],
-        'SIGNATURED_NEEDED_PERCENTAGE_C': [0.33, 0.50, 0.66]
+        'SIGNATURES_NEEDED': [0.33, 0.50, 0.66]
     },
     params_swept_env={
-        'PROBABILITY_SLASHABLE_ACTION_E': [0.00_1, 0.01_0, 0.10_0]
+        'MAX_VALIDATORS_TO_SLASH': [0.0, 1.0]
     },
     N_timesteps=3_000,
     N_samples=50,

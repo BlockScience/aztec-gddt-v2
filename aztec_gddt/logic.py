@@ -48,13 +48,19 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
     if l1_blocks_since_slot_init < params['L1_SLOTS_PER_L2_SLOT']:
         # If there's still slot time,
         # check whatever events have progressed
-        if l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_SENT:
+
+        if (l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_SENT):
             curr_slot.has_block_header_on_l1 = True
 
-        if l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_VALIDATE:
-            curr_slot.has_validator_signatures = True
+        if (l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_VALIDATE) and curr_slot.has_block_header_on_l1 and not curr_slot.has_collected_signatures:
+            max_signatures = params['VALIDATOR_COMMITTEE_SIZE']
+            required_signatures = params['VALIDATOR_COMMITTEE_SIZE'] * params['SIGNATURES_NEEDED'] + 1
+            collected_signatures = st.binom.rvs(n=max_signatures, p=(1-params['SIGNATURE_SKIP_PROBABILITY']))
+            curr_slot.has_collected_signatures = True
+            if collected_signatures >= required_signatures:
+                curr_slot.has_validator_signatures = True
 
-        if l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_PROPOSE:
+        if (l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_PROPOSE) and curr_slot.has_validator_signatures:
 
             if not (state['market_price_l1_gas'] > params['SEQUENCER_L1_GAS_PRICE_THRESHOLD_E']):
                 curr_slot.has_proposal_on_network = True
@@ -264,7 +270,8 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
 
                     # Slash prover
                     # TODO: confirm value
-                    agents[epoch.accepted_prover].stake -= params['BOND_SIZE'] * params['BOND_SLASH_PERCENT']
+                    # NOTE from 28Jan2025: ignore it for now
+                    # agents[epoch.accepted_prover].stake -= params['BOND_SIZE'] * params['BOND_SLASH_PERCENT']
 
                 else:
                     # Or just wait
@@ -314,7 +321,9 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     curr_epoch_proposers = [s.proposer for s in curr_epoch.slots]
                     for p in curr_epoch_proposers:
                         # TODO: confirm slash value for proposers
-                        agents[p].stake -= params['BOND_SIZE'] * params['BOND_SLASH_PERCENT']
+                        # NOTE from 28Jan2025: ignore it for now
+                        # agents[p].stake -= params['BOND_SIZE'] * params['BOND_SLASH_PERCENT']
+                        pass
                         
 
 

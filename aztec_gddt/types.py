@@ -42,6 +42,7 @@ class Slot():
     time_until_E_BLOCK_SENT: float
     has_proposal_on_network: bool = False
     has_validator_signatures: bool = False
+    has_collected_signatures: bool = False
     has_block_header_on_l1: bool = False
     tx_count: int = 0
     tx_total_mana: Mana = 0
@@ -135,7 +136,6 @@ class ModelParams(TypedDict):
     L1_SLOTS_PER_L2_SLOT: BlocksL1  # fixed
     PROVER_SEARCH_PERIOD: BlocksL2  # fixed
     MIN_ORACLE_UPDATE_LAG_C: BlocksL1
-    SIGNATURED_NEEDED_PERCENTAGE_C: Percentage
 
     ### Fee ###
     RELATIVE_TARGET_MANA_PER_BLOCK: Percentage  # sweep, relative to the maximum mana per block
@@ -180,7 +180,8 @@ class ModelParams(TypedDict):
     GWEI_PER_L1BLOBGAS_COV: Percentage
     SEQUENCER_L1_GAS_PRICE_THRESHOLD_E: Gwei
     TOTAL_MANA_MULTIPLIER_E: Percentage
-    PROBABILITY_SLASHABLE_ACTION_E: Percentage
+    SIGNATURE_SKIP_PROBABILITY: Percentage
+    MAX_VALIDATORS_TO_SLASH: Percentage
 
     # Exogenous
     market_price_eth: USDPerETH
