@@ -75,8 +75,8 @@ experiment_feemech_oracle_sensitivity = ExperimentParamSpec(
     },
     params_swept_env={
         'ORACLE_UPDATE_PRICE_FREQUENCY': [0.10, 0.50],
-        'PROVING_COST_MODIFICATION_E': ["-", "=", "+"], # TODO
-        'FEE_JUICE_PRICE_MODIFICATION_E': ["-", "=", "+"], # TODO
+        'PROVING_COST_MODIFICATION_E': [-0.001, 0.0, 0.001], # TODO
+        'FEE_JUICE_PRICE_MODIFICATION_E': [-0.001, 0.0, 0.001], # TODO
     },
     N_timesteps=3_000,
     N_samples=100,
@@ -106,7 +106,7 @@ experiment_stakeslash_validator_eject = ExperimentParamSpec(
     params_swept_control={
         'PERCENTAGE_STAKE_SLASHED_C': [0.00, 0.10, 1.00],
         'VALIDATOR_COMMITTEE_SIZE': [128, 256, 512],
-        'SIGNATURED_NEEDED_PERCENTAGE_C': 0.33, 0.50, 0.66]
+        'SIGNATURED_NEEDED_PERCENTAGE_C': [0.33, 0.50, 0.66]
     },
     params_swept_env={
         'PROBABILITY_SLASHABLE_ACTION_E': [0.00_1, 0.01_0, 0.10_0]

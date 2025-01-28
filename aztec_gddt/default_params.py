@@ -118,8 +118,8 @@ DEFAULT_PARAMS = ModelParams(label='default',
 
                              ### Behavioural ###
                              AVERAGE_TX_COUNT_PER_SLOT=360,
-                             PROVING_COST_MODIFICATION_E=0.005,
-                             FEE_JUICE_PRICE_MODIFICATION_E=0.001,
+                             PROVING_COST_MODIFICATION_E=0.0,
+                             FEE_JUICE_PRICE_MODIFICATION_E=0.0,
                              ORACLE_UPDATE_FREQUENCY_E=0.5,
                              JUICE_PER_GWEI_MEAN=1.1e-15,
                              JUICE_PER_GWEI_COV=0.10,

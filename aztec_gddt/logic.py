@@ -53,10 +53,10 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
 
         if l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_VALIDATE:
             curr_slot.has_validator_signatures = True
-            
+
         if l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_PROPOSE:
 
-            if not(state['market_price_l1_gas'] > params['SEQUENCER_L1_GAS_PRICE_THRESHOLD_E']):
+            if not (state['market_price_l1_gas'] > params['SEQUENCER_L1_GAS_PRICE_THRESHOLD_E']):
                 curr_slot.has_proposal_on_network = True
 
                 # XXX consider using a random distribution
@@ -88,8 +88,8 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
                 max_fee_std = params['MAX_FEE_INFLATION_RELATIVE_STD'] * max_fee
 
                 max_fees: npt.ArrayLike = st.norm.rvs(loc=max_fee_avg,
-                                    scale=max_fee_std,
-                                    size=[total_tx])
+                                                      scale=max_fee_std,
+                                                      size=[total_tx])
 
                 inds_valid_due_to_max_above_base = max_fees > base_fee
 
@@ -110,7 +110,8 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
                 curr_slot.tx_total_mana = (
                     total_tx - excl_tx - dropped_tx) * params['OVERHEAD_MANA_PER_TX'] * params['TOTAL_MANA_MULTIPLIER_E']
 
-                curr_slot.tx_total_fee = max_fees[valid_inds].sum() # type: ignore
+                # type: ignore
+                curr_slot.tx_total_fee = max_fees[valid_inds].sum()
     else:
         # If slot time has expired
         # then check whatever there's still
@@ -274,7 +275,7 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     # XXX
                     # Assume that each timestep
                     # a agent quotes between 0% and 50%
-                    
+
                     # 27Jan: draw from prover agent
                     prover_uuid = 'prover'
                     quote = uniform(0.0, 0.5)
@@ -393,7 +394,7 @@ def p_oracle_proving_cost(params: ModelParams, _2, _3, state: ModelState) -> dic
         relative_change = uniform(-params['MAXIMUM_UPDATE_PERCENTAGE_C'],
                                   params['MAXIMUM_UPDATE_PERCENTAGE_C'])
         PROOF_COST_IN_GWEI_PER_MANA = state['oracle_proving_cost'] * (
-            1 + relative_change)
+            1 + relative_change) * (1 + params['PROVING_COST_MODIFICATION_E'])
 
     return {'oracle_proving_cost': PROOF_COST_IN_GWEI_PER_MANA}
 
@@ -433,7 +434,8 @@ def generic_gaussian_noise(var,
                            cov_param,
                            do_round=True,
                            min_value=0.0,
-                           max_rel_change=float('nan')):
+                           max_rel_change=float('nan'),
+                           modification_key=None):
     def s_random_walk(params, _2, _3, state: dict, signal) -> tuple:
 
         if state['timestep'] <= 1:
@@ -446,7 +448,6 @@ def generic_gaussian_noise(var,
             value = round(raw_value)  # type: ignore
         else:
             value = raw_value  # type: ignore
-
 
         if np.isfinite(max_rel_change):
             past_value = state[var]
@@ -462,12 +463,20 @@ def generic_gaussian_noise(var,
         else:
             pass
 
+        if modification_key != None:
+            value = value * (1 + params[modification_key])
+
         return (var, value)
     return s_random_walk
 
 
 s_market_price_juice_per_gwei = generic_gaussian_noise(
-    'market_price_juice_per_gwei', 'JUICE_PER_GWEI_MEAN', 'JUICE_PER_GWEI_COV', False, min_value=0.0)
+    var='market_price_juice_per_gwei',
+    mu_param='JUICE_PER_GWEI_MEAN',
+    cov_param='JUICE_PER_GWEI_COV',
+    do_round=False,
+    min_value=0.0,
+    modification_key='FEE_JUICE_PRICE_MODIFICATION_E')
 
 s_market_price_l1_gas = generic_gaussian_noise(
     'market_price_l1_gas', 'GWEI_PER_L1GAS_MEAN', 'GWEI_PER_L1GAS_COV', True, min_value=1.0, max_rel_change=0.125)
