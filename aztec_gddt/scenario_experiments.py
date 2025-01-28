@@ -75,14 +75,14 @@ experiment_feemech_oracle_sensitivity = ExperimentParamSpec(
     },
     params_swept_env={
         'ORACLE_UPDATE_PRICE_FREQUENCY': [0.10, 0.50],
-        'PROVING_COST_MODIFICATION_E': [-0.001, 0.0, 0.001], # TODO
-        'FEE_JUICE_PRICE_MODIFICATION_E': [-0.001, 0.0, 0.001], # TODO
+        'PROVING_COST_MODIFICATION_E': [-0.001, 0.0, 0.001],  # TODO
+        'FEE_JUICE_PRICE_MODIFICATION_E': [-0.001, 0.0, 0.001],  # TODO
     },
     N_timesteps=3_000,
     N_samples=100,
     N_config_sample=-1,
-    relevant_per_trajectory_metrics=['T-M8', 'T-M9'],
-    relevant_per_trajectory_group_metrics=['TG-M7', 'TG-M8'],
+    relevant_per_trajectory_metrics=['T-M8a', 'T-M8b', 'T-M9'],
+    relevant_per_trajectory_group_metrics=['TG-M7', 'TG-M8a', 'TG-M8b'],
 )
 
 experiment_stakeslash_resume_inactivity = ExperimentParamSpec(
