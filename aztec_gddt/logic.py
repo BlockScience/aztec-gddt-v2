@@ -272,6 +272,10 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     # TODO: confirm value
                     # NOTE from 28Jan2025: ignore it for now
                     # agents[epoch.accepted_prover].stake -= params['BOND_SIZE'] * params['BOND_SLASH_PERCENT']
+                    n_validators_to_slash = int(random() * params['MAX_VALIDATORS_TO_SLASH'])
+                    slashed_validators = sample(epoch.validators, n_validators_to_slash)
+                    for k in slashed_validators:
+                        agents[k].stake = 0.0
 
                 else:
                     # Or just wait
@@ -324,6 +328,11 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                         # NOTE from 28Jan2025: ignore it for now
                         # agents[p].stake -= params['BOND_SIZE'] * params['BOND_SLASH_PERCENT']
                         pass
+
+                    n_validators_to_slash = int(random() * params['MAX_VALIDATORS_TO_SLASH'])
+                    slashed_validators = sample(epoch.validators, n_validators_to_slash)
+                    for k in slashed_validators:
+                        agents[k].stake = 0.0
                         
 
 
