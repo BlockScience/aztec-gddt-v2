@@ -4,7 +4,7 @@ from random import sample, random, uniform, normalvariate
 import numpy as np
 import numpy.typing as npt
 import scipy.stats as st
-from aztec_gddt.types import Slot
+from aztec_gddt.types import Agent, Slot
 from aztec_gddt.mechanism_functions import block_reward, compute_base_fee, expected_profit_per_tx, target_mana_per_block, proving_cost_fn
 import math
 
@@ -160,7 +160,7 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
             last_epoch.pending_time_in_l1 = state['l1_blocks_passed']
 
             # N validators are drawn (based on score) to the validator committee from the validator set (i.e. from the set of staked users)
-            validator_set = [a for a in state['agents']
+            validator_set = [a for a in state['agents'].values()
                              if a.stake >= params['BOND_SIZE']]
             ordered_validator_set = sorted(validator_set,
                                            key=lambda x: x.score,
@@ -246,7 +246,7 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                 delta_empty_blocks += len(
                     [s for s in epoch.slots if not s.has_block_header_on_l1])
                 agents = deepcopy(agents)
-                for a in agents:
+                for a in agents.values():
                     a.score = random()
             else:
                 # If prover didn't finalize, then
@@ -257,9 +257,14 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     delta_empty_blocks += len(epoch.slots)
                     delta_unproven_epochs += 1
                     delta_resolved_epochs += 1
-                    agents = deepcopy(agents)
-                    for a in agents:
+                    
+                    agents: dict[AgentUUID, Agent] = deepcopy(agents)
+                    for a in agents.values():
                         a.score = random()
+
+                    # Slash prover
+                    # TODO: confirm value
+                    agents[epoch.accepted_prover].stake -= params['BOND_SIZE'] * params['BOND_SLASH_PERCENT']
 
                 else:
                     # Or just wait
@@ -297,9 +302,22 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                 delta_empty_blocks += len(epoch.slots)
                 delta_unproven_epochs += 1
                 delta_resolved_epochs += 1
+
                 agents = deepcopy(agents)
-                for a in agents:
+                for a in agents.values():
                     a.score = random()
+                    
+                # If valid prover quotes were available,
+                # slash all proposers that could have accepted.
+                if len(epoch.prover_quotes) > 0:
+                    curr_epoch = state['current_epoch']
+                    curr_epoch_proposers = [s.proposer for s in curr_epoch.slots]
+                    for p in curr_epoch_proposers:
+                        # TODO: confirm slash value for proposers
+                        agents[p].stake -= params['BOND_SIZE'] * params['BOND_SLASH_PERCENT']
+                        
+
+
 
     return {'last_epoch': epoch,
             'last_reward': last_reward,

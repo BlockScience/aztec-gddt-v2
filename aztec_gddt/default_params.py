@@ -5,19 +5,20 @@ from random import random
 DEFAULT_BOND_SIZE: Juice = 1
 
 N_AGENTS = 512
-DEFAULT_INITIAL_AGENTS = []
+DEFAULT_INITIAL_AGENTS = {}
 
 AGGREGATE_PROVER = Agent(uuid='prover',
                          stake=1000 * DEFAULT_BOND_SIZE,
                          score=float('nan'))
 
+DEFAULT_INITIAL_AGENTS[AGGREGATE_PROVER.uuid] = AGGREGATE_PROVER
 
 for i in range(N_AGENTS):
     a = Agent(uuid=str(i),
               stake=5 * random() * DEFAULT_BOND_SIZE,
               score=random()
               )
-    DEFAULT_INITIAL_AGENTS.append(a)
+    DEFAULT_INITIAL_AGENTS[a.uuid] = a
 
 
 invalid_epoch = Epoch(init_time_in_l1=-999,
