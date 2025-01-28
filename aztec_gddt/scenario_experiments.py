@@ -58,7 +58,7 @@ experiment_feemech_shock_analysis = ExperimentParamSpec(
         'MAXIMUM_UPDATE_PERCENTAGE_C': [0.01, 0.03]
     },
     params_swept_env={
-        # TODO
+        'GWEI_PER_L1GAS_MEAN': [30, 100]
     },
     N_timesteps=3_000,
     N_samples=5,
