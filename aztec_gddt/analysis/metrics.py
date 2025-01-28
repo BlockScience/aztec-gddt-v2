@@ -92,6 +92,43 @@ def elasticity_base_fee_fee_juice_price(
     df): return average_base_fee_divided_by_oracle_parameter(df, 'FEE_JUICE_PRICE_MODIFICATION_E')
 
 
+def block_average_over_average_mana(traj_df) -> float:
+    finalized_epochs_inds = (traj_df.current_epoch.map(lambda x: x.finalized) == True)
+    finalized_epochs = traj_df[finalized_epochs_inds].current_epoch.tolist()
+
+    block_averages = []
+    for epoch in finalized_epochs:
+        for block in epoch.slots:
+            if block.has_proposal_on_network:
+                block_averages.append(block.tx_total_mana / block.tx_count)
+    return sum(block_averages) / len(block_averages)
+
+
+def between_threshold_over_fn(group_traj_dfs: list[pd.DataFrame], fn, 
+                              lower_threshold, 
+                              upper_threshold):
+    values = []
+    for traj_df in group_traj_dfs:
+        value = fn(traj_df)
+        values.append(value)
+
+    values = np.array(values)
+    count_under_threshold = np.sum((values <= upper_threshold) & (values >= lower_threshold))
+    return count_under_threshold / len(values)
+
+
+# def tg_m12(group_traj_dfs: list[pd.DataFrame]) -> float:
+#     return between_threshold_over_fn(group_traj_dfs=group_traj_dfs,
+#                                      fn=block_average_over_average_mana,
+#                                      lower_threshold=None,
+#                                      upper_threshold=None)
+
+# def tg_m13(group_traj_dfs: list[pd.DataFrame]) -> float:
+#     return between_threshold_over_fn(group_traj_dfs=group_traj_dfs,
+#                                      fn=block_average_over_average_mana,
+#                                      lower_threshold=None,
+#                                      upper_threshold=None)
+
 PER_TRAJECTORY_METRICS_LABELS = {
     'T-M1': "Fee/Juice Volatility",
     'T-M2': "Empty Blocks",
@@ -133,7 +170,7 @@ PER_TRAJECTORY_METRICS = {
     'T-M7b': elasticity_base_fee_fee_juice_price,
     'T-M8': counterfactual_sequencer_losses_due_to_lag,
     'T-M9': ratio_of_blocks_with_enough_signatures_per_collected_signatures,
-    'T-M11': None  # TODO
+    'T-M11': block_average_over_average_mana
 }
 
 PER_TRAJECTORY_GROUP_METRICS = {
