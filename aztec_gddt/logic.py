@@ -248,9 +248,9 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                 delta_finalized_epochs += 1
                 delta_cumm_mana += sum(s.tx_total_mana for s in epoch.slots)
                 delta_finalized_blocks += len(
-                    [s for s in epoch.slots if s.has_block_header_on_l1])
+                    [s for s in epoch.slots if s.has_proposal_on_network])
                 delta_empty_blocks += len(
-                    [s for s in epoch.slots if not s.has_block_header_on_l1])
+                    [s for s in epoch.slots if not s.has_proposal_on_network])
                 agents = deepcopy(agents)
                 for a in agents.values():
                     a.score = random()
