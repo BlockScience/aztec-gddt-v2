@@ -72,7 +72,9 @@ DEFAULT_INITIAL_STATE = ModelState(
     cumm_resolved_epochs=0,
     cumm_finalized_epochs=0,
     cumm_mana_used_on_finalized_blocks=0,
-    cumm_finalized_blocks=0
+    cumm_finalized_blocks=0,
+    cumm_blocks_with_collected_signatures=0,
+    cumm_blocks_with_enough_signatures=0
 )
 
 DEFAULT_PARAMS = ModelParams(label='default',

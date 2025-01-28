@@ -81,6 +81,8 @@ RAW_MODEL_BLOCKS: list[dict] = [
             'cumm_total_tx': add_suf,
             'excess_mana': replace_suf,
             'l2_blocks_passed': add_suf,
+            'cumm_blocks_with_collected_signatures': add_suf,
+            'cumm_blocks_with_enough_signatures': add_suf
         }
     },
     {

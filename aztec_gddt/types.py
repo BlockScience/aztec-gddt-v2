@@ -122,6 +122,8 @@ class ModelState(TypedDict):
     cumm_finalized_epochs: int
     cumm_mana_used_on_finalized_blocks: Mana
     cumm_finalized_blocks: BlocksL2
+    cumm_blocks_with_collected_signatures: int
+    cumm_blocks_with_enough_signatures: int
 
 class ModelParams(TypedDict):
     label: str

@@ -114,8 +114,8 @@ experiment_stakeslash_validator_eject = ExperimentParamSpec(
     N_timesteps=3_000,
     N_samples=50,
     N_config_sample=-1,
-    relevant_per_trajectory_metrics=['T-M10'],
-    relevant_per_trajectory_group_metrics=['TG-M11'],
+    relevant_per_trajectory_metrics=['T-M2', 'T-M3'],
+    relevant_per_trajectory_group_metrics=['TG-M2', 'TG-M3'],
 )
 
 experiment_l2_congestion = ExperimentParamSpec(

@@ -61,8 +61,8 @@ def counterfactual_sequencer_losses_due_to_lag(traj_df: pd.DataFrame) -> float:
     return (gwei_per_mana_market - gwei_per_mana_oracle).mean()
 
 
-def network_resumed_finalization_following_inactivity(traj_df: pd.DataFrame) -> bool:
-    return False
+def ratio_of_blocks_with_enough_signatures_per_collected_signatures(traj_df: pd.DataFrame) -> float:
+    return float(traj_df.iloc[-1]['cumm_blocks_with_enough_signatures'] / traj_df.iloc[-1]['cumm_blocks_with_collected_signatures']) # type: ignore
 
 
 def avg_over_fn(group_traj_dfs: list[pd.DataFrame], fn):
@@ -102,8 +102,7 @@ PER_TRAJECTORY_METRICS_LABELS = {
     'T-M7a': "Average Elasticity of Base Fee by Proving Cost",
     'T-M7b': "Average Elasticity of Base Fee by Fee Juice Price",
     'T-M8': "Counterfactual Sequencer Losses due to Lag",
-    'T-M9': "Network has resumed finalization following X periods of inactivity",
-    'T-M10': "Fraction of Inactive Network Time Due to Forced Validator Exit From Slashing",
+    'T-M9': "Ratio of Blocks with Enough Signatures per Blocks with Signatures",
     'T-M11': "Block-Average of Average Mana used per Block on the last timestep",
 }
 
@@ -118,8 +117,7 @@ PER_TRAJECTORY_GROUP_METRICS_LABELS = {
     'TG-M8a': "Trajectory-Average over Elasticity of Base Fee with respect to Proving Cost",
     'TG-M8b': "Trajectory-Average over Elasticity of Base Fee with respect to Fee Juice Price",
     'TG-M9': "Trajectory-Average over Counterfactual Sequencer Losses",
-    'TG-M10': "Fraction of trajectories with resumed finalized epochs",
-    'TG-M11': "Trajectory-Average over Fraction of Inactive Network Time Due to Forced Validator Exit From Slashing",
+    'TG-M10': "Trajectory-Average over Ratio of Blocks with Enough Signatures per Blocks with Signatures",
     'TG-M12': "Percentage of Trajectories where Block-Average Mana used is within range of target mana",
     'TG-M13': "Percentage of Trajectories where Block-Average Mana used is within range of max mana",
 }
@@ -134,8 +132,7 @@ PER_TRAJECTORY_METRICS = {
     'T-M7a': elasticity_base_fee_proving_cost,
     'T-M7b': elasticity_base_fee_fee_juice_price,
     'T-M8': counterfactual_sequencer_losses_due_to_lag,
-    'T-M9': network_resumed_finalization_following_inactivity,
-    'T-M10': None,  # TODO
+    'T-M9': ratio_of_blocks_with_enough_signatures_per_collected_signatures,
     'T-M11': None  # TODO
 }
 
@@ -150,8 +147,7 @@ PER_TRAJECTORY_GROUP_METRICS = {
     'TG-M8a': lambda dfs: avg_over_fn(dfs, elasticity_base_fee_proving_cost),
     'TG-M8b': lambda dfs: avg_over_fn(dfs, elasticity_base_fee_fee_juice_price),
     'TG-M9': lambda dfs: avg_over_fn(dfs, counterfactual_sequencer_losses_due_to_lag),
-    'TG-M10': lambda dfs: float('nan'),  # TODO
-    'TG-M11': lambda dfs: float('nan'),  # TODO
+    'TG-M10': lambda dfs: avg_over_fn(dfs, ratio_of_blocks_with_enough_signatures_per_collected_signatures),
     'TG-M12': lambda dfs: float('nan'),  # TODO
     'TG-M13': lambda dfs: float('nan'),  # TODO
 }
@@ -168,7 +164,6 @@ PER_TRAJECTORY_GROUP_COLLAPSED_METRICS = {
     'TG-M8b': lambda agg_df, x: agg_df[x] > agg_df[x].median(),
     'TG-M9': lambda agg_df, x: agg_df[x] < agg_df[x].median(),
     'TG-M10': lambda agg_df, x: agg_df[x] > agg_df[x].median(),
-    'TG-M11': lambda agg_df, x: agg_df[x] < agg_df[x].median(),
     'TG-M12': lambda agg_df, x: agg_df[x] > agg_df[x].median(),
     'TG-M13': lambda agg_df, x: agg_df[x] > agg_df[x].median(),
 }

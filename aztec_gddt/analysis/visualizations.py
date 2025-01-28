@@ -89,7 +89,10 @@ def plot_agg_kpis(agg_df, control_params, AggKPIs):
                             gridspec_kw={'height_ratios': [3, 1]})
 
     for i, aggKPI in enumerate(AggKPIs):
-        i_axes = (axes[0][i], axes[1][i])
+        if N_cols > 1:
+            i_axes = (axes[0][i], axes[1][i])
+        else:
+           i_axes = (axes[0], axes[1])
         param_sensitivity_plot(agg_df, control_params, aggKPI, label=f'{aggKPI}', axes=i_axes)
 
 

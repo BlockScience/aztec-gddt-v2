@@ -36,6 +36,9 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
     l2_blocks_passed = 0
     base_fee = state['base_fee']
 
+    delta_blocks_with_collected_signatures = 0
+    delta_blocks_with_enough_signatures = 0
+
     # Interpret zero slots as a signal for creating a new Epoch
     if len(epoch.slots) == 0:
         pass
@@ -59,10 +62,12 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
             collected_signatures = st.binom.rvs(
                 n=max_signatures, p=(1-params['SIGNATURE_SKIP_PROBABILITY']))
             curr_slot.has_collected_signatures = True
+            delta_blocks_with_collected_signatures = 1
             if collected_signatures >= required_signatures:
                 curr_slot.has_validator_signatures = True
+                delta_blocks_with_enough_signatures = 1
 
-        if (l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_PROPOSE) and curr_slot.has_validator_signatures:
+        if (l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_PROPOSE) and curr_slot.has_validator_signatures and not curr_slot.has_proposal_on_network:
 
             if not (state['market_price_l1_gas'] > params['SEQUENCER_L1_GAS_PRICE_THRESHOLD_E']):
                 curr_slot.has_proposal_on_network = True
@@ -203,7 +208,9 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
             'cumm_excl_tx': excl_tx,
             'cumm_total_tx': total_tx,
             'excess_mana': excess,
-            'l2_blocks_passed': l2_blocks_passed}
+            'l2_blocks_passed': l2_blocks_passed,
+            'cumm_blocks_with_collected_signatures': delta_blocks_with_collected_signatures,
+            'cumm_blocks_with_enough_signatures': delta_blocks_with_enough_signatures}
 
 
 def p_pending_epoch_proof(params: ModelParams, _2, _3,
