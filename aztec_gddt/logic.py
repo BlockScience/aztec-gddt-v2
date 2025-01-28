@@ -337,14 +337,21 @@ def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, sign
     return ('congestion_multiplier', multiplier)
 
 
-def generic_oracle(var_real, var_oracle, var_update_time, max_param=''):
+def generic_oracle(var_real,
+                   var_oracle,
+                   var_update_time,
+                   max_param='',
+                   lagged=True):
     def p_oracle_update(params: dict, _2, _3, state: dict) -> dict:
 
         now = state['l1_blocks_passed']
         value = state[var_oracle]
         update_time = state[var_update_time]
 
-        cond1 = now > (update_time + params['MIN_ORACLE_UPDATE_LAG_C'])
+        if lagged:
+            cond1 = now > (update_time + params['MIN_ORACLE_UPDATE_LAG_C'])
+        else:
+            cond1 = True
         cond2 = random() < params['ORACLE_UPDATE_FREQUENCY_E']
         cond3 = state['timestep'] <= 1
 
@@ -400,20 +407,23 @@ def p_oracle_proving_cost(params: ModelParams, _2, _3, state: ModelState) -> dic
 
 
 p_oracle_juice_per_gwei = generic_oracle(
-    'market_price_juice_per_gwei',
-    'oracle_price_juice_per_gwei',
-    'update_time_oracle_price_juice_per_gwei',
-    'MAXIMUM_UPDATE_PERCENTAGE_C')
+    var_real='market_price_juice_per_gwei',
+    var_oracle='oracle_price_juice_per_gwei',
+    var_update_time='update_time_oracle_price_juice_per_gwei',
+    max_param='MAXIMUM_UPDATE_PERCENTAGE_C',
+    lagged=False)
 
 p_oracle_l1_gas = generic_oracle(
-    'market_price_l1_gas',
-    'oracle_price_l1_gas',
-    'update_time_oracle_price_l1_gas')
+    var_real='market_price_l1_gas',
+    var_oracle='oracle_price_l1_gas',
+    var_update_time='update_time_oracle_price_l1_gas',
+    lagged=True)
 
 p_oracle_l1_blobgas = generic_oracle(
-    'market_price_l1_blobgas',
-    'oracle_price_l1_blobgas',
-    'update_time_oracle_price_l1_blobgas')
+    var_real='market_price_l1_blobgas',
+    var_oracle='oracle_price_l1_blobgas',
+    var_update_time='update_time_oracle_price_l1_blobgas',
+    lagged=True)
 
 
 def generic_random_walk(var, mu, std, do_round=True):
