@@ -136,6 +136,10 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              SIGNATURE_SKIP_PROBABILITY=0.0,
                              MAX_VALIDATORS_TO_SLASH=0.0,
 
+                             PROVER_QUOTE_LOWER_BOUND=0.1,
+                             PROVER_QUOTE_RANGE=0.8,
+                             PROVER_QUOTE_MODE=0.3,
+
                              # Exogenous
                              market_price_eth=3300,
                              )

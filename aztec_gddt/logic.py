@@ -54,8 +54,10 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
 
         if (l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_VALIDATE) and curr_slot.has_block_header_on_l1 and not curr_slot.has_collected_signatures:
             max_signatures = params['VALIDATOR_COMMITTEE_SIZE']
-            required_signatures = params['VALIDATOR_COMMITTEE_SIZE'] * params['SIGNATURES_NEEDED'] + 1
-            collected_signatures = st.binom.rvs(n=max_signatures, p=(1-params['SIGNATURE_SKIP_PROBABILITY']))
+            required_signatures = params['VALIDATOR_COMMITTEE_SIZE'] * \
+                params['SIGNATURES_NEEDED'] + 1
+            collected_signatures = st.binom.rvs(
+                n=max_signatures, p=(1-params['SIGNATURE_SKIP_PROBABILITY']))
             curr_slot.has_collected_signatures = True
             if collected_signatures >= required_signatures:
                 curr_slot.has_validator_signatures = True
@@ -263,7 +265,7 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     delta_empty_blocks += len(epoch.slots)
                     delta_unproven_epochs += 1
                     delta_resolved_epochs += 1
-                    
+
                     agents: dict[AgentUUID, Agent] = deepcopy(agents)
                     for a in agents.values():
                         a.score = random()
@@ -272,8 +274,10 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     # TODO: confirm value
                     # NOTE from 28Jan2025: ignore it for now
                     # agents[epoch.accepted_prover].stake -= params['BOND_SIZE'] * params['BOND_SLASH_PERCENT']
-                    n_validators_to_slash = int(random() * params['MAX_VALIDATORS_TO_SLASH'])
-                    slashed_validators = sample(epoch.validators, n_validators_to_slash)
+                    n_validators_to_slash = int(
+                        random() * params['MAX_VALIDATORS_TO_SLASH'])
+                    slashed_validators = sample(
+                        epoch.validators, n_validators_to_slash)
                     for k in slashed_validators:
                         agents[k].stake = 0.0
 
@@ -294,8 +298,12 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
 
                     # 27Jan: draw from prover agent
                     prover_uuid = 'prover'
-                    quote = uniform(0.0, 0.5)
-                    epoch.prover_quotes[prover_uuid] = quote
+                    quote = st.triang.rvs(
+                        c=(params['PROVER_QUOTE_MODE'] - params['PROVER_QUOTE_LOWER_BOUND']
+                           ) / params['PROVER_QUOTE_RANGE'],
+                        loc=params['PROVER_QUOTE_LOWER_BOUND'],
+                        scale=params['PROVER_QUOTE_RANGE'])
+                    epoch.prover_quotes[prover_uuid] = quote # type: ignore
                 else:
                     # If time for acceptance is over, then
                     if len(epoch.prover_quotes) > 0:
@@ -317,25 +325,25 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                 agents = deepcopy(agents)
                 for a in agents.values():
                     a.score = random()
-                    
+
                 # If valid prover quotes were available,
                 # slash all proposers that could have accepted.
                 if len(epoch.prover_quotes) > 0:
                     curr_epoch = state['current_epoch']
-                    curr_epoch_proposers = [s.proposer for s in curr_epoch.slots]
+                    curr_epoch_proposers = [
+                        s.proposer for s in curr_epoch.slots]
                     for p in curr_epoch_proposers:
                         # TODO: confirm slash value for proposers
                         # NOTE from 28Jan2025: ignore it for now
                         # agents[p].stake -= params['BOND_SIZE'] * params['BOND_SLASH_PERCENT']
                         pass
 
-                    n_validators_to_slash = int(random() * params['MAX_VALIDATORS_TO_SLASH'])
-                    slashed_validators = sample(epoch.validators, n_validators_to_slash)
+                    n_validators_to_slash = int(
+                        random() * params['MAX_VALIDATORS_TO_SLASH'])
+                    slashed_validators = sample(
+                        epoch.validators, n_validators_to_slash)
                     for k in slashed_validators:
                         agents[k].stake = 0.0
-                        
-
-
 
     return {'last_epoch': epoch,
             'last_reward': last_reward,
@@ -363,7 +371,6 @@ def s_congestion_multiplier(params: ModelParams, _2, _3, state: ModelState, sign
         update_frac = params['RELATIVE_UPDATE_FRACTION_CONGESTION'] * \
             params['MAXIMUM_MANA_PER_BLOCK']
         multiplier = params['MINIMUM_MULTIPLIER_CONGESTION']
-
 
         raw_ratio = state['excess_mana'] / update_frac
         max_ratio = params['MAXIMUM_MULTIPLIER_CONGESTION_RATIO']

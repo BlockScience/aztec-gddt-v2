@@ -183,6 +183,9 @@ class ModelParams(TypedDict):
     TOTAL_MANA_MULTIPLIER_E: Percentage
     SIGNATURE_SKIP_PROBABILITY: Percentage
     MAX_VALIDATORS_TO_SLASH: Percentage
+    PROVER_QUOTE_LOWER_BOUND: Percentage
+    PROVER_QUOTE_RANGE:Percentage
+    PROVER_QUOTE_MODE: Percentage
 
     # Exogenous
     market_price_eth: USDPerETH
