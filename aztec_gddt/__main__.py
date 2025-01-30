@@ -6,8 +6,12 @@ import logging
 from pathlib import Path
 from multiprocessing import cpu_count
 from aztec_gddt import DEFAULT_LOGGER
-import boto3 # type: ignore
+import boto3  # type: ignore
 import os
+from aztec_gddt.analysis.metrics import *
+from aztec_gddt.scenario_experiments import *
+from aztec_gddt.analysis.execute import execute_sim, complexity_desc
+
 
 logger = logging.getLogger(DEFAULT_LOGGER)
 log_levels = {
@@ -58,7 +62,6 @@ def main(process: bool,
          log_level: str,
          upload_to_cloud: bool,
          no_parallelize: bool) -> None:
-    
 
     if upload_to_cloud:
         session = boto3.Session()
@@ -68,8 +71,31 @@ def main(process: bool,
 
     timestamp = datetime.now().strftime("%Y-%m-%dT%H%M%SZ%z")
 
+    # test_run()
+    from aztec_gddt.helper_types import ExperimentParamSpec
 
-    test_run()
+    exp_spec = ExperimentParamSpec(
+        params_swept_control={
+            'RELATIVE_TARGET_MANA_PER_BLOCK': [0.50, 0.90],
+            'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000],
+        },
+        params_swept_env={
+            'SEQUENCER_L1_GAS_PRICE_THRESHOLD_E': [100, 1_000],
+            'TOTAL_MANA_MULTIPLIER_E': [1.0, 10.0]
+        },
+        N_timesteps=500,
+        N_samples=1,
+        N_config_sample=-1,
+        relevant_per_trajectory_metrics=list(
+            PER_TRAJECTORY_METRICS_LABELS.keys()),
+        relevant_per_trajectory_group_metrics=list(
+            PER_TRAJECTORY_GROUP_METRICS_LABELS.keys()),
+    )
+    CONTROL_PARAMS = list(exp_spec.params_swept_control.keys())
+    sim_df, exec_time = execute_sim(exp_spec.prepare())
+    agg_df, c_agg_df = retrieve_feature_df(
+        sim_df, CONTROL_PARAMS, exp_spec.relevant_per_trajectory_group_metrics)
+
 
 if __name__ == "__main__":
     main()

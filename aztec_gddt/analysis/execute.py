@@ -40,7 +40,7 @@ def execute_sim(exp_wrapper: ExperimentWrapper) -> tuple[pd.DataFrame, Execution
     exec_time.after_run = time()
 
     # Parse the output as a pandas DataFrame
-    df = pd.DataFrame(records)
+    df = pd.DataFrame(records) # type: ignore
 
     # Drop substeps
     first_ind = (df.substep == 0) & (df.timestep == 0)
@@ -76,7 +76,8 @@ def execute_sim(exp_wrapper: ExperimentWrapper) -> tuple[pd.DataFrame, Execution
 
     # Post Processing Metrics
     sim_df['normed_congestion_multiplier'] = sim_df['congestion_multiplier'] / sim_df['MINIMUM_MULTIPLIER_CONGESTION']
-
+    sim_df['average_mana_per_block_per_target'] = sim_df.apply(lambda df: sum(b.tx_total_mana for b in df.last_epoch.slots) / len(df.last_epoch.slots) / (df.MAXIMUM_MANA_PER_BLOCK * df.RELATIVE_TARGET_MANA_PER_BLOCK) if len(df.last_epoch.slots) > 0 else float('nan'), axis='columns')
+    sim_df['average_mana_per_block_per_max'] = sim_df.apply(lambda df: sum(b.tx_total_mana for b in df.last_epoch.slots) / len(df.last_epoch.slots) / (df.MAXIMUM_MANA_PER_BLOCK) if (len(df.last_epoch.slots) > 0 & df.last_epoch.finalized) else float('nan'), axis='columns')
     return sim_df, exec_time
 
 def complexity_desc(sim_df: pd.DataFrame, exec_time: ExecutionTime) -> str:

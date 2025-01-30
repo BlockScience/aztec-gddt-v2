@@ -99,16 +99,22 @@ def block_average_over_average_mana(traj_df) -> float:
     """
 
     """
-    finalized_epochs_inds = (
-        traj_df.current_epoch.map(lambda x: x.finalized) == True)
+    finalized_epochs_inds = (traj_df.apply(lambda x: x.last_epoch.finalized_time_in_l1 == x.l1_blocks_passed, axis='columns'))
     finalized_epochs = traj_df[finalized_epochs_inds].current_epoch.tolist()
 
-    block_averages = []
+    # block_averages = []
+    block_manas = []
     for epoch in finalized_epochs:
         for block in epoch.slots:
             if block.has_proposal_on_network:
-                block_averages.append(block.tx_total_mana / block.tx_count)
-    return sum(block_averages) / len(block_averages)
+                # block_averages.append(block.tx_total_mana / block.tx_count)
+                block_manas.append(block.tx_total_mana)
+    # if len(block_averages) > 0:
+    #     return sum(block_averages) / len(block_averages)
+    if len(block_manas) > 0:
+        return sum(block_manas) / len(block_manas)
+    else:
+        return float('nan')
 
 
 def between_threshold_over_fn(group_traj_dfs: list[pd.DataFrame],
@@ -130,40 +136,43 @@ def between_threshold_over_fn(group_traj_dfs: list[pd.DataFrame],
 
 
 def tg_m12(group_traj_dfs: list[pd.DataFrame],
-           lower_tol: float = 0.9,
-           upper_tol: float = 1.1) -> float:
+           lower_tol: float = 0.665,
+           upper_tol: float = 1.334) -> float:
     success_count = 0
     total_count = 0
-    
+
     for traj_df in group_traj_dfs:
-        total_count = 0
+        total_count += 1
         value = block_average_over_average_mana(traj_df)
-        target_mana = traj_df['RELATIVE_TARGET_MANA_PER_BLOCK'] * traj_df['MAXIMUM_MANA_PER_BLOCK']
+        target_mana = (traj_df['RELATIVE_TARGET_MANA_PER_BLOCK']
+                       * traj_df['MAXIMUM_MANA_PER_BLOCK']).iloc[-1]
         lower_bound = target_mana * lower_tol
         upper_bound = target_mana * upper_tol
-        
+
         if (value >= lower_bound) & (value < upper_bound):
             success_count += 1
-        
+
     return success_count / total_count
 
+
 def tg_m13(group_traj_dfs: list[pd.DataFrame],
-           lower_tol: float = 0.9,
-           upper_tol: float = 1.1) -> float:
+           lower_tol: float = 0.2,
+           upper_tol: float = 1.0) -> float:
     success_count = 0
     total_count = 0
-    
+
     for traj_df in group_traj_dfs:
-        total_count = 0
+        total_count += 1
         value = block_average_over_average_mana(traj_df)
-        max_mana = traj_df['MAXIMUM_MANA_PER_BLOCK']
+        max_mana = traj_df['MAXIMUM_MANA_PER_BLOCK'].iloc[-1]
         lower_bound = max_mana * lower_tol
         upper_bound = max_mana * upper_tol
-        
+
         if (value >= lower_bound) & (value < upper_bound):
             success_count += 1
-        
+
     return success_count / total_count
+
 
 PER_TRAJECTORY_METRICS_LABELS = {
     'T-M1': "Fee/Juice Volatility",
@@ -176,7 +185,7 @@ PER_TRAJECTORY_METRICS_LABELS = {
     'T-M7b': "Average Elasticity of Base Fee by Fee Juice Price",
     'T-M8': "Counterfactual Sequencer Losses due to Lag",
     'T-M9': "Ratio of Blocks with Enough Signatures per Blocks with Signatures",
-    'T-M11': "Block-Average of Average Mana used per Block on the last timestep",
+    'T-M10': "Block-Average of Average Mana used per Block on the last timestep",
 }
 
 PER_TRAJECTORY_GROUP_METRICS_LABELS = {
@@ -206,7 +215,7 @@ PER_TRAJECTORY_METRICS = {
     'T-M7b': elasticity_base_fee_fee_juice_price,
     'T-M8': counterfactual_sequencer_losses_due_to_lag,
     'T-M9': ratio_of_blocks_with_enough_signatures_per_collected_signatures,
-    'T-M11': block_average_over_average_mana
+    'T-M10': block_average_over_average_mana
 }
 
 PER_TRAJECTORY_GROUP_METRICS = {
@@ -221,8 +230,8 @@ PER_TRAJECTORY_GROUP_METRICS = {
     'TG-M8b': lambda dfs: avg_over_fn(dfs, elasticity_base_fee_fee_juice_price),
     'TG-M9': lambda dfs: avg_over_fn(dfs, counterfactual_sequencer_losses_due_to_lag),
     'TG-M10': lambda dfs: avg_over_fn(dfs, ratio_of_blocks_with_enough_signatures_per_collected_signatures),
-    'TG-M12': lambda dfs: float('nan'),  # TODO
-    'TG-M13': lambda dfs: float('nan'),  # TODO
+    'TG-M12': tg_m12,  # TODO
+    'TG-M13': tg_m13,  # TODO
 }
 
 PER_TRAJECTORY_GROUP_COLLAPSED_METRICS = {

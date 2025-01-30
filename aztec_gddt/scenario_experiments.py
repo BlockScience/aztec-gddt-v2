@@ -130,6 +130,6 @@ experiment_l2_congestion = ExperimentParamSpec(
     N_timesteps=3_000,
     N_samples=50,
     N_config_sample=-1,
-    relevant_per_trajectory_metrics=['T-M11'],
+    relevant_per_trajectory_metrics=['T-M10'],
     relevant_per_trajectory_group_metrics=['TG-M12', 'TG-M13'],
 )
