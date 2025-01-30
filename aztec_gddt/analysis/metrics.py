@@ -56,13 +56,16 @@ def average_base_fee_divided_by_oracle_parameter(traj_df: pd.DataFrame,
 
 def counterfactual_sequencer_losses_due_to_lag(traj_df: pd.DataFrame) -> float:
     # XXX
-    gwei_per_mana_market = traj_df['base_fee'] / traj_df['market_price_juice_per_gwei']
-    gwei_per_mana_oracle = traj_df['base_fee'] / traj_df['oracle_price_juice_per_gwei']
+    gwei_per_mana_market = traj_df['base_fee'] / \
+        traj_df['market_price_juice_per_gwei']
+    gwei_per_mana_oracle = traj_df['base_fee'] / \
+        traj_df['oracle_price_juice_per_gwei']
     return (gwei_per_mana_market - gwei_per_mana_oracle).mean()
 
 
 def ratio_of_blocks_with_enough_signatures_per_collected_signatures(traj_df: pd.DataFrame) -> float:
-    return float(traj_df.iloc[-1]['cumm_blocks_with_enough_signatures'] / traj_df.iloc[-1]['cumm_blocks_with_collected_signatures']) # type: ignore
+    # type: ignore
+    return float(traj_df.iloc[-1]['cumm_blocks_with_enough_signatures'] / traj_df.iloc[-1]['cumm_blocks_with_collected_signatures'])
 
 
 def avg_over_fn(group_traj_dfs: list[pd.DataFrame], fn):
@@ -93,7 +96,11 @@ def elasticity_base_fee_fee_juice_price(
 
 
 def block_average_over_average_mana(traj_df) -> float:
-    finalized_epochs_inds = (traj_df.current_epoch.map(lambda x: x.finalized) == True)
+    """
+
+    """
+    finalized_epochs_inds = (
+        traj_df.current_epoch.map(lambda x: x.finalized) == True)
     finalized_epochs = traj_df[finalized_epochs_inds].current_epoch.tolist()
 
     block_averages = []
@@ -104,30 +111,59 @@ def block_average_over_average_mana(traj_df) -> float:
     return sum(block_averages) / len(block_averages)
 
 
-def between_threshold_over_fn(group_traj_dfs: list[pd.DataFrame], fn, 
-                              lower_threshold, 
-                              upper_threshold):
-    values = []
+def between_threshold_over_fn(group_traj_dfs: list[pd.DataFrame],
+                              fn,
+                              threshold_col: str,
+                              lower_threshold: float = 0.9,
+                              upper_threshold: float = 1.1,
+                              ) -> float:
+    success_count = 0
+    total_count = 0
     for traj_df in group_traj_dfs:
+        total_count = 0
         value = fn(traj_df)
-        values.append(value)
+        lower_bound = traj_df[threshold_col] * lower_threshold
+        upper_bound = traj_df[threshold_col] * upper_bound
+        if (value >= lower_bound) & (value < upper_bound):
+            success_count += 1
+    return success_count / total_count
 
-    values = np.array(values)
-    count_under_threshold = np.sum((values <= upper_threshold) & (values >= lower_threshold))
-    return count_under_threshold / len(values)
 
+def tg_m12(group_traj_dfs: list[pd.DataFrame],
+           lower_tol: float = 0.9,
+           upper_tol: float = 1.1) -> float:
+    success_count = 0
+    total_count = 0
+    
+    for traj_df in group_traj_dfs:
+        total_count = 0
+        value = block_average_over_average_mana(traj_df)
+        target_mana = traj_df['RELATIVE_TARGET_MANA_PER_BLOCK'] * traj_df['MAXIMUM_MANA_PER_BLOCK']
+        lower_bound = target_mana * lower_tol
+        upper_bound = target_mana * upper_tol
+        
+        if (value >= lower_bound) & (value < upper_bound):
+            success_count += 1
+        
+    return success_count / total_count
 
-# def tg_m12(group_traj_dfs: list[pd.DataFrame]) -> float:
-#     return between_threshold_over_fn(group_traj_dfs=group_traj_dfs,
-#                                      fn=block_average_over_average_mana,
-#                                      lower_threshold=None,
-#                                      upper_threshold=None)
-
-# def tg_m13(group_traj_dfs: list[pd.DataFrame]) -> float:
-#     return between_threshold_over_fn(group_traj_dfs=group_traj_dfs,
-#                                      fn=block_average_over_average_mana,
-#                                      lower_threshold=None,
-#                                      upper_threshold=None)
+def tg_m13(group_traj_dfs: list[pd.DataFrame],
+           lower_tol: float = 0.9,
+           upper_tol: float = 1.1) -> float:
+    success_count = 0
+    total_count = 0
+    
+    for traj_df in group_traj_dfs:
+        total_count = 0
+        value = block_average_over_average_mana(traj_df)
+        max_mana = traj_df['MAXIMUM_MANA_PER_BLOCK']
+        lower_bound = max_mana * lower_tol
+        upper_bound = max_mana * upper_tol
+        
+        if (value >= lower_bound) & (value < upper_bound):
+            success_count += 1
+        
+    return success_count / total_count
 
 PER_TRAJECTORY_METRICS_LABELS = {
     'T-M1': "Fee/Juice Volatility",
