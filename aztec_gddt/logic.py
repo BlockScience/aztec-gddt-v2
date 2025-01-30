@@ -70,11 +70,8 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
         if (l1_blocks_since_slot_init >= curr_slot.time_until_E_BLOCK_PROPOSE) and curr_slot.has_validator_signatures and not curr_slot.has_proposal_on_network:
 
             if not (state['market_price_l1_gas'] > params['SEQUENCER_L1_GAS_PRICE_THRESHOLD_E']):
-                curr_slot.has_proposal_on_network = True
-
                 # XXX consider using a random distribution
-                curr_slot.tx_count = params['AVERAGE_TX_COUNT_PER_SLOT']
-                total_tx += curr_slot.tx_count
+                expected_total_tx = params['AVERAGE_TX_COUNT_PER_SLOT']
                 # # XXX consider adding a random term
                 # curr_slot.tx_total_mana = curr_slot.tx_count * \
                 #     params['general'].OVERHEAD_MANA_PER_TX
@@ -102,12 +99,12 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
 
                 max_fees: npt.ArrayLike = st.norm.rvs(loc=max_fee_avg,
                                                       scale=max_fee_std,
-                                                      size=[total_tx])
+                                                      size=[expected_total_tx])
 
                 inds_valid_due_to_max_above_base = max_fees > base_fee
 
                 inds_valid_due_to_profitability = expected_profit_per_tx(
-                    params, state, max_fees, 0.00, total_tx) > 0
+                    params, state, max_fees, 0.00, expected_total_tx) > 0
 
                 passively_excl_inds = np.bitwise_not(
                     inds_valid_due_to_max_above_base)
@@ -117,14 +114,33 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
                 valid_inds = np.bitwise_not(
                     passively_excl_inds | actively_excl_inds)
 
-                excl_tx = np.sum(passively_excl_inds)
-                dropped_tx = np.sum(actively_excl_inds)  # type: ignore
+                expected_excl_tx = np.sum(passively_excl_inds)
+                expected_dropped_tx = np.sum(actively_excl_inds)  # type: ignore
 
-                curr_slot.tx_total_mana = (
-                    total_tx - excl_tx - dropped_tx) * params['OVERHEAD_MANA_PER_TX'] * params['TOTAL_MANA_MULTIPLIER_E']
+                expected_incl_tx = (expected_total_tx - expected_excl_tx - expected_dropped_tx)
 
-                # type: ignore
-                curr_slot.tx_total_fee = max_fees[valid_inds].sum()
+                expected_block_mana = (expected_incl_tx
+                                        * params['OVERHEAD_MANA_PER_TX']
+                                          * params['TOTAL_MANA_MULTIPLIER_E'])
+
+                # XXX
+                expected_block_fees = max_fees[valid_inds].sum() # type: ignore
+                if expected_block_mana <= params['MAXIMUM_MANA_PER_BLOCK']:
+                    curr_slot.has_proposal_on_network = True
+                    curr_slot.tx_total_mana = expected_block_mana
+                    curr_slot.tx_total_fee = expected_block_fees
+                    total_tx = expected_total_tx
+                    excl_tx = expected_excl_tx
+                    dropped_tx = expected_dropped_tx
+                else:
+                    curr_slot.has_proposal_on_network = True
+                    curr_slot.tx_total_mana = params['MAXIMUM_MANA_PER_BLOCK']
+                    curr_slot.tx_total_fee = expected_block_fees * params['MAXIMUM_MANA_PER_BLOCK'] / expected_block_mana
+                    excl_tx = expected_excl_tx
+                    total_tx = int(expected_incl_tx * params['MAXIMUM_MANA_PER_BLOCK'] / expected_block_mana)
+                    dropped_tx = expected_total_tx - (total_tx + excl_tx)
+                
+                curr_slot.tx_count = total_tx
     else:
         # If slot time has expired
         # then check whatever there's still
