@@ -10,8 +10,7 @@ from cadCAD.engine import ExecutionContext, ExecutionMode, Executor
 from cadCAD.tools.execution.easy_run import select_config_M_dict  # type: ignore
 from time import time
 
-logger
- = logging.getLogger('aztec-gddt-v2')
+logger= logging.getLogger('aztec-gddt-v2')
 @dataclasses_json
 @dataclass
 class ExecutionTime():
