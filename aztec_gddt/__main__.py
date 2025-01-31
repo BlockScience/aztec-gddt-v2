@@ -6,7 +6,6 @@ import logging
 from pathlib import Path
 from multiprocessing import cpu_count
 from aztec_gddt import DEFAULT_LOGGER
-import boto3  # type: ignore
 import os
 from aztec_gddt.analysis.metrics import *
 from aztec_gddt.scenario_experiments import *
@@ -62,10 +61,6 @@ def main(process: bool,
          experiment: str,
          log_level: str,
          upload_to_cloud: bool) -> None:
-
-    if upload_to_cloud:
-        session = boto3.Session()
-        s3 = session.client("s3")
 
     logger.setLevel(log_levels[log_level])
 
