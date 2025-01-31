@@ -191,7 +191,7 @@ PER_TRAJECTORY_METRICS_LABELS = {
 PER_TRAJECTORY_GROUP_METRICS_LABELS = {
     'TG-M1': "Trajectory-Average over Relative Volatility",
     'TG-M2': "Trajectory-Average over Empty Blocks",
-    'TG-M3': "Trajectory- over Unproven Epochs Across",
+    'TG-M3': "Trajectory-Average over Unproven Epochs Across",
     'TG-M4': "Trajectory-Average over percentage of dropped transactions",
     'TG-M5': "Percentage of MC runs above dropped threshold",
     'TG-M6': "Trajectory-Average over percentage of excluded transactions",
