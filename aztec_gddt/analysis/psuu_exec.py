@@ -125,7 +125,7 @@ def psuu(
         if SWEEPS_PER_PROCESS > 0:
             sweeps_per_process = SWEEPS_PER_PROCESS
         else:
-            sweeps_per_process = max(min(int(traj_combinations / PROCESSES), 20), 1)
+            sweeps_per_process = max(min(int(traj_combinations / PROCESSES), 50), 1)
         processes = PROCESSES
 
         chunk_size = sweeps_per_process
@@ -167,7 +167,7 @@ def psuu(
                 supress_print=True
             )
 
-                
+            sim_df["simulation"] = i_chunk
             sim_df["subset"] = i_chunk * SWEEPS_PER_PROCESS + sim_df["subset"]
             sim_df = post_process_sim_df(sim_df)
             output_filename = output_path + f"-{i_chunk}.pkl.gz"
