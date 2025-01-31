@@ -125,13 +125,14 @@ def psuu(
         if SWEEPS_PER_PROCESS > 0:
             sweeps_per_process = SWEEPS_PER_PROCESS
         else:
-            sweeps_per_process = max(min(int(n_sweeps / PROCESSES), 20), 1)
+            sweeps_per_process = max(min(int(traj_combinations / PROCESSES), 20), 1)
         processes = PROCESSES
 
         chunk_size = sweeps_per_process
         split_dicts = [
             {k: v[i: i + chunk_size] for k, v in sweep_params_samples.items()}
             for i in range(0, len(list(sweep_params_samples.values())[0]), chunk_size)
+            for j in range(exp_spec.N_samples)
         ]
         sim_folder_path = Path(f"data/runs/")
         base_folder = Path(
@@ -155,7 +156,7 @@ def psuu(
                 sweep_params,
                 MODEL_BLOCKS,
                 TIMESTEPS,
-                exp_spec.N_samples,
+                1,
             )
             # Run simulationz
             sim_df = easy_run(
