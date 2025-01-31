@@ -10,3 +10,4 @@ numpy
 joblib
 dataclasses_json
 click
+gcsfs

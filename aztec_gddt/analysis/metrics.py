@@ -270,9 +270,13 @@ def retrieve_feature_df(sim_df, control_params, RELEVANT_PER_TRAJECTORY_GROUP_ME
     agg_df = pd.DataFrame(records).groupby(
         group_params + ['metric']).metric_value.first().unstack().reset_index()
 
-    collapsed_agg_df = agg_df.copy()
 
+    collapsed_agg_df = compute_agg_df(RELEVANT_PER_TRAJECTORY_GROUP_METRICS, agg_df)
+    return agg_df, collapsed_agg_df
+
+def compute_agg_df(RELEVANT_PER_TRAJECTORY_GROUP_METRICS, agg_df):
+    collapsed_agg_df = agg_df.copy()
     for label in RELEVANT_PER_TRAJECTORY_GROUP_METRICS:
         collapsed_agg_df[label] = PER_TRAJECTORY_GROUP_COLLAPSED_METRICS[label](
             agg_df, label)
-    return agg_df, collapsed_agg_df
+    return collapsed_agg_df

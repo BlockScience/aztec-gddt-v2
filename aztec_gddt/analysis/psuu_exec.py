@@ -16,6 +16,8 @@ from pathlib import Path
 import os
 from multiprocessing import cpu_count
 from google.cloud import storage
+from aztec_gddt.analysis.post_proc import post_process_sim_df
+
 
 from aztec_gddt.default_params import DEFAULT_PARAMS, DEFAULT_INITIAL_STATE
 from aztec_gddt.types import *
@@ -179,12 +181,7 @@ def psuu(
                 os.remove(str(output_filename))
 
             if post_process:
-                sim_df['normed_congestion_multiplier'] = sim_df['congestion_multiplier'] / \
-                    sim_df['MINIMUM_MULTIPLIER_CONGESTION']
-                sim_df['average_mana_per_block_per_target'] = sim_df.apply(lambda df: sum(b.tx_total_mana for b in df.last_epoch.slots) / len(df.last_epoch.slots) / (
-                    df.MAXIMUM_MANA_PER_BLOCK * df.RELATIVE_TARGET_MANA_PER_BLOCK) if len(df.last_epoch.slots) > 0 else float('nan'), axis='columns')
-                sim_df['average_mana_per_block_per_max'] = sim_df.apply(lambda df: sum(b.tx_total_mana for b in df.last_epoch.slots) / len(
-                    df.last_epoch.slots) / (df.MAXIMUM_MANA_PER_BLOCK) if (len(df.last_epoch.slots) > 0 & df.last_epoch.finalized) else float('nan'), axis='columns')
+                sim_df = post_process_sim_df(sim_df)
 
                 agg_df, c_agg_df = retrieve_feature_df(
                     sim_df, 
