@@ -33,7 +33,7 @@ CLOUD_PROJECT = 'aztec-bsci'
 def psuu(
     exp_spec: ExperimentParamSpec,
     SWEEPS_PER_PROCESS: int = -1,
-    PROCESSES: int = cpu_count(),
+    PROCESSES: int = max(cpu_count()-1, 1),
     PARALLELIZE: bool = True,
     USE_JOBLIB: bool = True,
     RETURN_SIM_DF: bool = False,
