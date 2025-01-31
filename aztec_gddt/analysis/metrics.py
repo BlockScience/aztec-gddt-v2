@@ -253,7 +253,7 @@ PER_TRAJECTORY_GROUP_COLLAPSED_METRICS = {
 
 def retrieve_feature_df(sim_df, control_params, RELEVANT_PER_TRAJECTORY_GROUP_METRICS):
 
-    group_params = ['simulation', 'subset', 'run'] + control_params
+    group_params = ['simulation', 'subset'] + control_params
     records = []
     for label in RELEVANT_PER_TRAJECTORY_GROUP_METRICS:
         fn = PER_TRAJECTORY_GROUP_METRICS[label]
