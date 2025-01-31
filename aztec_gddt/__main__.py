@@ -31,19 +31,19 @@ log_levels = {
               default=-1)
 @click.option('-r',
               '--mc_runs',
-              default=5)
+              default=-1)
 @click.option('-t',
               '--timesteps',
-              default=1_000)
+              default=-1)
+@click.option('-e',
+              '--experiment',
+              default='test')
 @click.option('-p',
               '--process',
               default=False,
               is_flag=True)
 @click.option('-c',
               '--upload_to_cloud',
-              default=False,
-              is_flag=True)
-@click.option('--no_parallelize',
               default=False,
               is_flag=True)
 @click.option(
@@ -59,9 +59,9 @@ def main(process: bool,
          sweep_samples: int,
          mc_runs: int,
          timesteps: int,
+         experiment: str,
          log_level: str,
-         upload_to_cloud: bool,
-         no_parallelize: bool) -> None:
+         upload_to_cloud: bool) -> None:
 
     if upload_to_cloud:
         session = boto3.Session()
@@ -69,33 +69,33 @@ def main(process: bool,
 
     logger.setLevel(log_levels[log_level])
 
+
+    if experiment == 'all':
+        for exp in SCOPED_EXPERIMENTS:
+            run_exp(sweep_samples, mc_runs, timesteps, exp)
+    else:
+        found_exps = [e for e in SCOPED_EXPERIMENTS if e.label.upper() == experiment.upper()]
+        if len(found_exps) > 0:
+            found_exp = found_exps[0]
+        else:
+            raise Exception(f"Experiment {experiment} not found!")
+        
+        run_exp(sweep_samples, mc_runs, timesteps, found_exp)
+
     timestamp = datetime.now().strftime("%Y-%m-%dT%H%M%SZ%z")
 
-    # test_run()
-    from aztec_gddt.helper_types import ExperimentParamSpec
+def run_exp(sweep_samples, mc_runs, timesteps, found_exp):
+    if sweep_samples > 0:
+        found_exp.N_config_sample = sweep_samples
 
-    exp_spec = ExperimentParamSpec(
-        label='test',
-        params_swept_control={
-            'RELATIVE_TARGET_MANA_PER_BLOCK': [0.50, 0.90],
-            'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000],
-        },
-        params_swept_env={
-            'SEQUENCER_L1_GAS_PRICE_THRESHOLD_E': [100, 1_000],
-            'TOTAL_MANA_MULTIPLIER_E': [1.0, 10.0]
-        },
-        N_timesteps=500,
-        N_samples=1,
-        N_config_sample=-1,
-        relevant_per_trajectory_metrics=list(
-            PER_TRAJECTORY_METRICS_LABELS.keys()),
-        relevant_per_trajectory_group_metrics=list(
-            PER_TRAJECTORY_GROUP_METRICS_LABELS.keys()),
-    )
-    CONTROL_PARAMS = list(exp_spec.params_swept_control.keys())
-    sim_df, exec_time = execute_sim(exp_spec)
-    agg_df, c_agg_df = retrieve_feature_df(
-        sim_df, CONTROL_PARAMS, exp_spec.relevant_per_trajectory_group_metrics)
+    if timesteps > 0:
+        found_exp.N_timesteps = timesteps
+
+    if mc_runs > 0:
+        found_exp.N_samples = mc_runs
+
+    execute_sim(found_exp)
+
 
 
 if __name__ == "__main__":

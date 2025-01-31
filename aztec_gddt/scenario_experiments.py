@@ -1,10 +1,28 @@
 from aztec_gddt.helper_types import ExperimentParamSpec
-
+from aztec_gddt.analysis.metrics import PER_TRAJECTORY_GROUP_METRICS_LABELS, PER_TRAJECTORY_METRICS_LABELS
 
 ### Classes ###
 
 # Scenario Specs
 
+experiment_test = ExperimentParamSpec(
+    label='test',
+    params_swept_control={
+        'RELATIVE_TARGET_MANA_PER_BLOCK': [0.50, 0.90],
+        'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000],
+    },
+    params_swept_env={
+        'SEQUENCER_L1_GAS_PRICE_THRESHOLD_E': [100, 1_000],
+        'TOTAL_MANA_MULTIPLIER_E': [1.0, 2.0]
+    },
+    N_timesteps=3_000,
+    N_samples=2,
+    N_config_sample=-1,
+    relevant_per_trajectory_metrics=list(
+        PER_TRAJECTORY_METRICS_LABELS.keys()),
+    relevant_per_trajectory_group_metrics=list(
+        PER_TRAJECTORY_GROUP_METRICS_LABELS.keys()),
+)
 
 experiment_feemech_volatility = ExperimentParamSpec(
     label='FM-SG1',
@@ -140,3 +158,15 @@ experiment_l2_congestion = ExperimentParamSpec(
     relevant_per_trajectory_metrics=['T-M10'],
     relevant_per_trajectory_group_metrics=['TG-M12', 'TG-M13'],
 )
+
+
+SCOPED_EXPERIMENTS = [
+    experiment_test,
+    experiment_feemech_volatility,
+    experiment_feemech_l2_cost_censorship,
+    experiment_feemech_shock_analysis,
+    experiment_feemech_oracle_sensitivity,
+    experiment_stakeslash_resume_inactivity,
+    experiment_stakeslash_validator_eject,
+    experiment_l2_congestion
+]

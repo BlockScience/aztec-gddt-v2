@@ -15,7 +15,7 @@ import logging
 from pathlib import Path
 import os
 from multiprocessing import cpu_count
-import boto3  # type: ignore
+from google.cloud import storage
 
 from aztec_gddt.default_params import DEFAULT_PARAMS, DEFAULT_INITIAL_STATE
 from aztec_gddt.types import *
@@ -26,16 +26,16 @@ import warnings
 
 logger = logging.getLogger('aztec-gddt-v2')
 CLOUD_BUCKET_NAME = 'aztec-gddt-v2-sim'
-
+CLOUD_PROJECT = 'aztec-bsci'
 
 def psuu(
     exp_spec: ExperimentParamSpec,
-    SWEEPS_PER_PROCESS: int = 20,
+    SWEEPS_PER_PROCESS: int = -1,
     PROCESSES: int = cpu_count(),
     PARALLELIZE: bool = True,
-    USE_JOBLIB: bool = False,
+    USE_JOBLIB: bool = True,
     RETURN_SIM_DF: bool = False,
-    UPLOAD_TO_S3: bool = False,
+    UPLOAD_TO_S3: bool = True,
     ignore_warnings: bool = True
 ):
     """Function which runs the cadCAD simulations
@@ -94,14 +94,14 @@ def psuu(
     traj_combinations = n_sweeps * exp_spec.N_samples
 
     logger.info(
-        f"{exp_spec.label} run Dimensions: N_jobs={PROCESSES=:,}, N_t={TIMESTEPS=:,}, N_sweeps={n_sweeps:,}, N_mc={exp_spec.N_samples:,}, N_trajectories={traj_combinations:,}, N_measurements={N_measurements:,}")
+        f"{exp_spec.label} dimensions: N_jobs={PROCESSES:,}, N_t={TIMESTEPS:,}, N_sweeps={n_sweeps:,}, N_mc={exp_spec.N_samples:,}, N_trajectories={traj_combinations:,}, N_measurements={N_measurements:,}")
 
     parallelize = PARALLELIZE
     use_joblib = USE_JOBLIB
 
     sim_start_time = datetime.now()
     logger.info(
-        f"{exp_spec.label} Exploratory Run starting at {sim_start_time}, ({sim_start_time - invoke_time} since invoke)")
+        f"{exp_spec.label} starting at {sim_start_time}, ({sim_start_time - invoke_time} since invoke)")
     if parallelize is False:
         # Load simulation arguments
         sim_args = (
@@ -120,7 +120,10 @@ def psuu(
             supress_print=True
         )
     else:
-        sweeps_per_process = SWEEPS_PER_PROCESS
+        if SWEEPS_PER_PROCESS > 0:
+            sweeps_per_process = SWEEPS_PER_PROCESS
+        else:
+            sweeps_per_process = max(min(int(n_sweeps / PROCESSES), 20), 1)
         processes = PROCESSES
 
         chunk_size = sweeps_per_process
@@ -128,15 +131,20 @@ def psuu(
             {k: v[i: i + chunk_size] for k, v in sweep_params_samples.items()}
             for i in range(0, len(list(sweep_params_samples.values())[0]), chunk_size)
         ]
-        sim_folder_path = Path(f"data/runs/{exp_spec.label if exp_spec.label != '' else 'undefined'}/")
+        sim_folder_path = Path(f"data/runs/")
         base_folder = Path(
-            f"{datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')}")
+            f"{exp_spec.label if exp_spec.label != '' else 'undefined'}/{datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')}")
         output_folder_path = sim_folder_path / base_folder
         output_folder_path.mkdir(parents=True, exist_ok=True)
 
         with open(output_folder_path / "spec.json", "w") as fid:
             fid.write(exp_spec.to_json())
         output_path = str(output_folder_path / "timestep_tensor")
+        if UPLOAD_TO_S3:
+            storage_client = storage.Client(project=CLOUD_PROJECT)
+            bucket = storage_client.bucket(CLOUD_BUCKET_NAME)
+            blob = bucket.blob(str(base_folder / "spec.json")) # type: ignore
+            blob.upload_from_filename(output_folder_path / "spec.json") # type: ignore
 
         def run_chunk(i_chunk, sweep_params, pickle_file=True, upload_to_s3=UPLOAD_TO_S3, post_process=True):
             logger.debug(f"{i_chunk}, {datetime.now()}")
@@ -156,21 +164,18 @@ def psuu(
                 supress_print=True
             )
 
-            if upload_to_s3:
-                session = boto3.Session()
-                s3 = session.client("s3")
-
+                
             sim_df["subset"] = i_chunk * SWEEPS_PER_PROCESS + sim_df["subset"]
             output_filename = output_path + f"-{i_chunk}.pkl.gz"
 
             if pickle_file or upload_to_s3:
                 sim_df.to_pickle(output_filename)
             if upload_to_s3:
-                s3.upload_file(str(output_filename),
-                               CLOUD_BUCKET_NAME,
-                               str(base_folder /
-                                   f"timestep_tensor-{i_chunk}.pkl.gz")
-                               )
+                storage_client = storage.Client(project=CLOUD_PROJECT)
+                bucket = storage_client.bucket(CLOUD_BUCKET_NAME)
+                blob = bucket.blob(str(base_folder /
+                                   f"timestep_tensor-{i_chunk}.pkl.gz")) # type: ignore
+                blob.upload_from_filename(str(output_filename)) # type: ignore
                 os.remove(str(output_filename))
 
             if post_process:
@@ -187,21 +192,14 @@ def psuu(
                     exp_spec.relevant_per_trajectory_group_metrics)
 
                 agg_output_filename = output_folder_path / \
-                    f"trajectory_tensor-{i_chunk}.csv.gz"
+                    f"trajectory_tensor-{i_chunk}.pkl.gz"
                 
-                c_agg_output_filename = output_folder_path / \
-                    f"trajectory_bool_tensor-{i_chunk}.csv.gz"
                 
                 if pickle_file:
-                    agg_df.to_csv(agg_output_filename)
-                    c_agg_df.to_csv(agg_output_filename)
+                    agg_df.to_pickle(agg_output_filename)
                     if upload_to_s3:
-                        s3.upload_file(str(agg_output_filename),
-                                       CLOUD_BUCKET_NAME,
-                                       str(base_folder / f"trajectory_tensor-{i_chunk}.csv.gz"))
-                        s3.upload_file(str(c_agg_output_filename),
-                                       CLOUD_BUCKET_NAME,
-                                       str(base_folder / f"trajectory_bool_tensor-{i_chunk}.csv.gz"))
+                        blob = bucket.blob(str(base_folder / f"trajectory_tensor-{i_chunk}.pkl.gz")) # type: ignore
+                        blob.upload_from_filename(str(agg_output_filename)) # type: ignore
         args = enumerate(split_dicts)
         if use_joblib:
             Parallel(n_jobs=processes)(
@@ -223,22 +221,25 @@ def psuu(
     logger.info(
         f"{exp_spec.label} Run finished at {end_start_time}, ({end_start_time - sim_start_time} since sim start)")
     logger.info(
-        f"{exp_spec.label} Run Performance Numbers; Duration (s): {duration:,.2f}, Measurements Per Second: {N_measurements/duration:,.2f} M/s, Measurements per Job * Second: {N_measurements/(duration * PROCESSES):,.2f} M/(J*s)")
+        f"{exp_spec.label} Run Performance Numbers; Duration (s): {duration:,.2f}, Measurements Per Second: {N_measurements/duration:,.2f} M/s, Measurements per Job * Second: {N_measurements/(duration * PROCESSES):,.2f} M/(J*s), Jobs * Seconds per Trajectory : {duration * PROCESSES / traj_combinations:,.2f}")
     if RETURN_SIM_DF:
         return sim_df  # type: ignore
     else:
         pass
 
-    if use_joblib and UPLOAD_TO_S3:
-        files = glob(str(output_folder_path / f"trajectory_tensor-*.pkl.gz"))
+    if use_joblib:
+        files = glob(str(output_folder_path / f"trajectory_tensor-*.pkl.gz")) # type: ignore
         dfs = []
         for file in files:
             dfs.append(pd.read_pickle(file).reset_index())
         agg_df = pd.concat(dfs)
-        agg_df.to_pickle(str(output_folder_path / f"trajectory_tensor.pkl.gz"))
-        session = boto3.Session()
-        s3 = session.client("s3")
-        s3.upload_file(str(output_folder_path / f"trajectory_tensor.pkl.gz"),
-                       CLOUD_BUCKET_NAME,
-                       str(base_folder / f"trajectory_tensor.pkl.gz"))
+        agg_df.to_csv(str(output_folder_path / f"trajectory_tensor.csv.gz")) # type: ignore
+        agg_df.to_pickle(str(output_folder_path / f"trajectory_tensor.pkl.gz")) # type: ignore
+        if UPLOAD_TO_S3:
+            storage_client = storage.Client(project=CLOUD_PROJECT)
+            bucket = storage_client.bucket(CLOUD_BUCKET_NAME)
+            blob = bucket.blob(str(base_folder / f"trajectory_tensor.csv.gz")) # type: ignore
+            blob.upload_from_filename(str(output_folder_path / f"trajectory_tensor.csv.gz")) # type: ignore
+            blob = bucket.blob(str(base_folder / f"trajectory_tensor.pkl.gz")) # type: ignore
+            blob.upload_from_filename(str(output_folder_path / f"trajectory_tensor.pkl.gz")) # type: ignore
     return None
