@@ -4,7 +4,7 @@ from aztec_gddt.types import *
 
 
 def relative_volatility_across_time(traj_df: pd.DataFrame) -> float:
-    return traj_df.market_price_juice_per_gwei.std() / traj_df.base_fee.std()
+    return traj_df.market_price_juice_per_gwei.std(skipna=True) / traj_df.base_fee.std(skipna=True)
 
 
 def empty_blocks_during_trajectory(traj_df: pd.DataFrame) -> int:
