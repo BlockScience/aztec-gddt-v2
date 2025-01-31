@@ -7,6 +7,7 @@ from aztec_gddt.helper_types import ExperimentParamSpec
 
 
 experiment_feemech_volatility = ExperimentParamSpec(
+    label='FM-SG1',
     params_swept_control={
         'RELATIVE_TARGET_MANA_PER_BLOCK': [0.5, 0.9],
         'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000],
@@ -27,6 +28,7 @@ experiment_feemech_volatility = ExperimentParamSpec(
 )
 
 experiment_feemech_l2_cost_censorship = ExperimentParamSpec(
+    label='FM-SG2',
     params_swept_control={
         'MAX_FEE_INFLATION_RELATIVE_STD': [0.05, 0.1, 0.2],
         'RELATIVE_TARGET_MANA_PER_BLOCK': [0.5, 0.9],
@@ -48,6 +50,7 @@ experiment_feemech_l2_cost_censorship = ExperimentParamSpec(
 )
 
 experiment_feemech_shock_analysis = ExperimentParamSpec(
+    label='FM-SG3',
     params_swept_control={
         'MAX_FEE_INFLATION_RELATIVE_STD': [0.05, 0.1, 0.2],
         'RELATIVE_TARGET_MANA_PER_BLOCK': [0.5, 0.9],
@@ -70,6 +73,7 @@ experiment_feemech_shock_analysis = ExperimentParamSpec(
 
 
 experiment_feemech_oracle_sensitivity = ExperimentParamSpec(
+    label='FM-SG4',
     params_swept_control={
         'MAXIMUM_UPDATE_PERCENTAGE_C': [0.01, 0.03],
     },
@@ -86,6 +90,7 @@ experiment_feemech_oracle_sensitivity = ExperimentParamSpec(
 )
 
 experiment_stakeslash_resume_inactivity = ExperimentParamSpec(
+    label='SS-SG1',
     params_swept_control={
         'PERCENTAGE_STAKE_SLASHED_C': [0.00, 0.10, 1.00],
         'VALIDATOR_COMMITTEE_SIZE': [128, 256, 512],
@@ -103,6 +108,7 @@ experiment_stakeslash_resume_inactivity = ExperimentParamSpec(
 
 
 experiment_stakeslash_validator_eject = ExperimentParamSpec(
+    label='SS-SG2',
     params_swept_control={
         'PERCENTAGE_STAKE_SLASHED_C': [0.00, 0.10, 1.00],
         'VALIDATOR_COMMITTEE_SIZE': [128, 256, 512],
@@ -119,6 +125,7 @@ experiment_stakeslash_validator_eject = ExperimentParamSpec(
 )
 
 experiment_l2_congestion = ExperimentParamSpec(
+    label='L2C-SG',
     params_swept_control={
         'RELATIVE_TARGET_MANA_PER_BLOCK': [0.50, 0.90],
         'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000],

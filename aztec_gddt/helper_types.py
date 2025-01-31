@@ -7,7 +7,9 @@ from cadCAD.configuration.utils import config_sim  # type: ignore
 from cadCAD.tools.preparation import sweep_cartesian_product  # type: ignore
 from random import sample
 from dataclasses import dataclass, field
-
+import numpy as np
+from typing import Iterable
+from dataclasses_json import dataclass_json
 
 @dataclass
 class ExperimentWrapper():
@@ -17,8 +19,19 @@ class ExperimentWrapper():
     N_samples: int
     N_configs: int
     experiment: Experiment
+    label: str = ""
+
+    def split_into_chunks(self, N_chunks) -> Iterable[Experiment]:
+        splitted_configs: list[dict] = list(np.array_split(self.experiment.configs, N_chunks)) # type: ignore
+
+        for i, splitted_config in enumerate(splitted_configs):
+            exp = Experiment()
+            exp.configs = list(splitted_configs)
+            yield exp
 
 
+
+@dataclass_json
 @dataclass
 class ExperimentParamSpec():
     params_swept_control: dict
@@ -28,6 +41,7 @@ class ExperimentParamSpec():
     N_config_sample: int
     relevant_per_trajectory_metrics: list[str] = field(default_factory=list)
     relevant_per_trajectory_group_metrics: list[str] = field(default_factory=list)
+    label: str = ""
 
     def print_control_params(self):
         for k, v in self.params_swept_control.items():
@@ -37,7 +51,7 @@ class ExperimentParamSpec():
         for k, v in self.params_swept_env.items():
             print(f"{k}: {v}")
 
-    def prepare(self) -> ExperimentWrapper:
+    def prepare(self=1) -> ExperimentWrapper:
         default_params = {k: [v] for k, v in DEFAULT_PARAMS.items()}
 
         params_to_sweep = {**default_params, **
@@ -69,5 +83,6 @@ class ExperimentParamSpec():
                                     N_timesteps=self.N_timesteps,
                                     N_samples=self.N_samples,
                                     N_configs=N_configs,
-                                    experiment=exp)
+                                    experiment=exp,
+                                    label=self.label)
         return wrapper
