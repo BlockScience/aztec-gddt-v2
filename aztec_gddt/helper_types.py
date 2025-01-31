@@ -43,6 +43,23 @@ class ExperimentParamSpec():
     relevant_per_trajectory_group_metrics: list[str] = field(default_factory=list)
     label: str = ""
 
+    @property
+    def N_params(self) -> int:
+        N_params = 1
+        for k, v in self.params_swept_control.items():
+            N_params *= len(v)
+        for k, v in self.params_swept_env.items():
+            N_params *= len(v)
+        return N_params
+    
+    @property
+    def N_trajectories(self) -> int:
+        return self.N_params * self.N_samples
+    
+    @property
+    def N_measurements(self) -> int:
+        return self.N_trajectories * self.N_timesteps
+
     def print_control_params(self):
         for k, v in self.params_swept_control.items():
             print(f"{k}: {v}")

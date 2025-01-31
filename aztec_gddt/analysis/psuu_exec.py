@@ -168,6 +168,7 @@ def psuu(
 
                 
             sim_df["subset"] = i_chunk * SWEEPS_PER_PROCESS + sim_df["subset"]
+            sim_df = post_process_sim_df(sim_df)
             output_filename = output_path + f"-{i_chunk}.pkl.gz"
 
             if pickle_file or upload_to_s3:
@@ -181,7 +182,6 @@ def psuu(
                 os.remove(str(output_filename))
 
             if post_process:
-                sim_df = post_process_sim_df(sim_df)
 
                 agg_df, c_agg_df = retrieve_feature_df(
                     sim_df, 

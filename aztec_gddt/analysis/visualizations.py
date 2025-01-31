@@ -84,9 +84,9 @@ def plot_agg_kpis(agg_df, control_params, AggKPIs):
 
     fig, axes = plt.subplots(nrows=2,
                             ncols=N_cols,
-                            figsize=(30, 12),
+                            figsize=(70, 10),
                             dpi=72,
-                            gridspec_kw={'height_ratios': [3, 1]})
+                            gridspec_kw={'height_ratios': [2, 1]})
 
     for i, aggKPI in enumerate(AggKPIs):
         if N_cols > 1:

@@ -91,18 +91,15 @@ def execute_sim(exp_spec: ExperimentParamSpec, alternate=True, return_sim_df=Fal
         return sim_df, exec_time
 
 
-def complexity_desc(sim_df: pd.DataFrame, exec_time: ExecutionTime) -> str:
-    N_trajectories = len(sim_df[['subset', 'run']].drop_duplicates())
+def complexity_desc(exp_spec: ExperimentParamSpec) -> str:
 
     text = f"""
     #### Computational Complexity:
-    1. Total number of parameter combinations: {len(sim_df.subset.unique()):,}
-    2. Total number of Monte Carlo runs per parameter combination: {len(sim_df.run.unique()):,}
-    3. Total number of trajectories: {N_trajectories:,}
-    4. Total number of timesteps per trajectory: {sim_df.timestep.max():,}
-    5. Total number of state measurements: {len(sim_df):,}
-    6. Workflow execution time: {exec_time.workflow:,.3} seconds ({exec_time.workflow / N_trajectories:,.3} seconds per trajectory)
-    7. Engine execution time: {exec_time.simulation:,.3} seconds ({exec_time.simulation / N_trajectories:,.3} seconds per trajectory)
+    1. Total number of parameter combinations: {exp_spec.N_params:,}
+    2. Total number of Monte Carlo runs per parameter combination: {exp_spec.N_samples:,}
+    3. Total number of trajectories: {exp_spec.N_trajectories:,}
+    4. Total number of timesteps per trajectory: {exp_spec.N_timesteps:,}
+    5. Total number of state measurements: {exp_spec.N_measurements:,}
     """
 
     return text
