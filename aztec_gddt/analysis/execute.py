@@ -5,13 +5,13 @@ from aztec_gddt.analysis.post_proc import post_process_sim_df
 from multiprocessing import cpu_count
 from joblib import Parallel, delayed  # type: ignore
 import logging
-import dataclasses_json
+from dataclasses_json import dataclass_json
 from cadCAD.engine import ExecutionContext, ExecutionMode, Executor
 from cadCAD.tools.execution.easy_run import select_config_M_dict  # type: ignore
 from time import time
 
 logger= logging.getLogger('aztec-gddt-v2')
-@dataclasses_json
+@dataclass_json
 @dataclass
 class ExecutionTime():
     before_setup: float = float('nan')
