@@ -150,7 +150,7 @@ def psuu(
             blob.upload_from_filename(output_folder_path / "spec.json") # type: ignore
 
         def run_chunk(i_chunk, sweep_params, pickle_file=True, upload_to_s3=UPLOAD_TO_S3, post_process=True):
-            logger.debug(f"{i_chunk}, {datetime.now()}")
+            #logger.debug(f"{i_chunk}, {datetime.now()}")
             sim_args = (
                 DEFAULT_INITIAL_STATE,
                 sweep_params,
