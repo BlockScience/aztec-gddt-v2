@@ -125,7 +125,7 @@ def psuu(
         if SWEEPS_PER_PROCESS > 0:
             sweeps_per_process = SWEEPS_PER_PROCESS
         else:
-            sweeps_per_process = max(min(int(traj_combinations / PROCESSES), 40), 1)
+            sweeps_per_process = max(min(int(traj_combinations / PROCESSES), 20), 1)
         processes = PROCESSES
 
         chunk_size = sweeps_per_process
