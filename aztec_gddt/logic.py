@@ -87,7 +87,7 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
                     inflation_estimate = (
                         history[-1][-1]['base_fee'] / history[-2][-1]['base_fee']) - 1
                 else:
-                    inflation_estimate = 1.0
+                    inflation_estimate = params['INITIAL_INFLATION_ESTIMATE']
 
                 max_fee: JuicePerMana = (
                     1 + inflation_estimate) * past_base_fee

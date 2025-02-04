@@ -174,6 +174,7 @@ class ModelParams(TypedDict):
     ORACLE_UPDATE_FREQUENCY_E: Percentage  # env, sweep
     JUICE_PER_GWEI_MEAN: JuicePerGwei
     JUICE_PER_GWEI_COV: JuicePerGwei
+    INITIAL_INFLATION_ESTIMATE: Percentage
     MAX_FEE_INFLATION_RELATIVE_MEAN: Percentage
     MAX_FEE_INFLATION_RELATIVE_STD: Percentage
 
