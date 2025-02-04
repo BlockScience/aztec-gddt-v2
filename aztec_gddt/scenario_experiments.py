@@ -48,7 +48,6 @@ experiment_feemech_volatility = ExperimentParamSpec(
 experiment_feemech_l2_cost_censorship = ExperimentParamSpec(
     label='FM-SG2',
     params_swept_control={
-        'MAX_FEE_INFLATION_RELATIVE_STD': [0.05, 0.1, 0.2],
         'RELATIVE_TARGET_MANA_PER_BLOCK': [0.5, 0.9],
         'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000],
         'MINIMUM_MULTIPLIER_CONGESTION': [1_000_000, 4_000_000, 10_000_000],
