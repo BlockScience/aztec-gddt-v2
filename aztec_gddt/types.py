@@ -20,7 +20,7 @@ Token = float
 ETH = float
 Fiat = float
 
-Gwei = Annotated[float, 'gwei']  # 1e-18 ETH
+Gwei = Annotated[float, 'gwei']  # 1e-9 ETH
 Gas = Annotated[int, 'gas']
 GweiPerGas = Annotated[float, 'gwei/gas']
 GweiPerMana = Annotated[float, 'gwei/mana']
@@ -71,11 +71,11 @@ class Epoch():
     time_until_E_EPOCH_FINISH: BlocksL1
     pending_time_in_l1: int = -999  # Time in L1 when Epoch has entered Pending Chain
     finalized_time_in_l1: int = -999
-    prover_quotes: dict[AgentUUID, Token] = field(default_factory=dict)
+    prover_quotes: dict[AgentUUID, Percentage] = field(default_factory=dict)
     accepted_prover: Optional[AgentUUID] = None
     accepted_prover_quote: Token = float('nan')
-    reward: Token = float('nan')
-    fee_compensation: Token = float('nan')
+    reward: Juice = float('nan')
+    fee_compensation: Juice = float('nan')
     finalized: bool = False
     reorged: bool = False
 
@@ -83,7 +83,7 @@ class Epoch():
 @dataclass
 class Agent():
     uuid: AgentUUID
-    stake: Token
+    stake: Juice
     score: float
 
 
@@ -131,6 +131,8 @@ class ModelState(TypedDict):
     cumm_finalized_blocks: BlocksL2
     cumm_blocks_with_collected_signatures: int
     cumm_blocks_with_enough_signatures: int
+    slash_count: int
+    slash_amount: Juice
 
 class ModelParams(TypedDict):
     label: str

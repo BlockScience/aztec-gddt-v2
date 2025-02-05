@@ -116,13 +116,15 @@ def plot_inspect_vars(sim_df):
 
     cols_7 = ['oracle_proving_cost'] # Gwei per Mana
 
-    cols_8 = ['normed_congestion_multiplier'] 
+    cols_8 = ['normed_congestion_multiplier', 'slash_count'] # Unitless
 
-    cols_9 = ['average_mana_per_block_per_target', 'average_mana_per_block_per_max'] 
+    cols_9 = ['average_mana_per_block_per_target', 'average_mana_per_block_per_max'] # Mana
+
+    cols_10 = ['slash_amount'] # Juice
 
 
     N_subsets = 5
-    N_cols = 9
+    N_cols = 10
     size_per_col = 6
     size_per_row = 3
 
@@ -215,8 +217,16 @@ def plot_inspect_vars(sim_df):
         sns.lineplot(melted_df, x=X_COL, y='value', hue='variable', ax=ax)
         ax.grid()
         # ax.set_yscale('log')
-        ax.set_ylabel('Unitless')
+        ax.set_ylabel('Mana')
         if i < N_subsets - 1:
          ax.get_legend().remove()
 
+        ax = axes[i][9]
+        melted_df = traj_df.reset_index().melt(id_vars=[X_COL], value_vars=cols_10)
+        sns.lineplot(melted_df, x=X_COL, y='value', hue='variable', ax=ax)
+        ax.grid()
+        # ax.set_yscale('log')
+        ax.set_ylabel('Juice')
+        if i < N_subsets - 1:
+         ax.get_legend().remove()
     plt.show()

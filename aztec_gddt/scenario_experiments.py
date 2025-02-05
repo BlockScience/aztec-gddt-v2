@@ -29,13 +29,13 @@ experiment_feemech_volatility = ExperimentParamSpec(
     params_swept_control={
         'RELATIVE_TARGET_MANA_PER_BLOCK': [0.5, 0.9],
         'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000],
-        'MINIMUM_MULTIPLIER_CONGESTION': [1_000_000, 4_000_000, 10_000_000],
+        'MINIMUM_MULTIPLIER_CONGESTION': [100_000, 1_000_000, 10_000_000],
         'RELATIVE_UPDATE_FRACTION_CONGESTION': [0.1, 1.0, 10.0],
         'OVERHEAD_MANA_PER_TX': [1_000, 10_000, 50_000],
         'MAXIMUM_UPDATE_PERCENTAGE_C': [0.01, 0.03]
     },
     params_swept_env={
-        'JUICE_PER_GWEI_MEAN': [1.1e-15, 10e-15],
+        'JUICE_PER_GWEI_MEAN': [1.1e-6, 10e-6],
         'JUICE_PER_GWEI_COV': [0.03, 0.30],
         'JUICE_PER_GWEI_SCENARIO': [JuiceGweiExchangeRateScenario.Stochastic, JuiceGweiExchangeRateScenario.StrictlyIncreasing, JuiceGweiExchangeRateScenario.StrictlyDecreasing, JuiceGweiExchangeRateScenario.Constant]
     },
@@ -51,7 +51,7 @@ experiment_feemech_l2_cost_censorship = ExperimentParamSpec(
     params_swept_control={
         'RELATIVE_TARGET_MANA_PER_BLOCK': [0.5, 0.9],
         'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000],
-        'MINIMUM_MULTIPLIER_CONGESTION': [1_000_000, 4_000_000, 10_000_000],
+        'MINIMUM_MULTIPLIER_CONGESTION': [100_000, 1_000_000, 10_000_000],
         'RELATIVE_UPDATE_FRACTION_CONGESTION': [0.1, 1.0, 10.0],
         'OVERHEAD_MANA_PER_TX': [1_000, 10_000, 50_000],
         'MAXIMUM_UPDATE_PERCENTAGE_C': [0.01, 0.03]
@@ -74,7 +74,7 @@ experiment_feemech_shock_analysis = ExperimentParamSpec(
         'MAX_FEE_INFLATION_RELATIVE_STD': [0.05, 0.1, 0.2],
         'RELATIVE_TARGET_MANA_PER_BLOCK': [0.5, 0.9],
         'MAXIMUM_MANA_PER_BLOCK': [20_000_000, 40_000_000],
-        'MINIMUM_MULTIPLIER_CONGESTION': [1_000_000, 4_000_000, 10_000_000],
+        'MINIMUM_MULTIPLIER_CONGESTION': [100_000, 1_000_000, 10_000_000],
         'RELATIVE_UPDATE_FRACTION_CONGESTION': [0.1, 1.0, 10.0],
         'OVERHEAD_MANA_PER_TX': [1_000, 10_000, 50_000],
         'MAXIMUM_UPDATE_PERCENTAGE_C': [0.01, 0.03]

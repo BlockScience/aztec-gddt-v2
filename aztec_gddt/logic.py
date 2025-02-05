@@ -195,8 +195,9 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
             last_epoch.pending_time_in_l1 = state['l1_blocks_passed']
 
             # N validators are drawn (based on score) to the validator committee from the validator set (i.e. from the set of staked users)
-            validator_set = [a for a in state['agents'].values()
-                             if a.stake >= params['BOND_SIZE']]
+            validator_set = [a for k, a in state['agents'].items()
+                             if a.stake >= params['BOND_SIZE']
+                             and k != 'prover']
             ordered_validator_set = sorted(validator_set,
                                            key=lambda x: x.score,
                                            reverse=True)
@@ -248,6 +249,8 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
     delta_finalized_epochs = 0
     delta_cumm_mana = 0
     delta_finalized_blocks = 0
+    slash_count = 0
+    slash_amount = 0.0
 
     # Ignore resolved epochs (eg. finalized or reorged)
     if epoch.finalized or epoch.reorged:
@@ -303,11 +306,12 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                     # TODO: confirm value
                     # NOTE from 28Jan2025: ignore it for now
                     # agents[epoch.accepted_prover].stake -= params['BOND_SIZE'] * params['BOND_SLASH_PERCENT']
-                    n_validators_to_slash = int(
+                    slash_count = int(
                         random() * params['MAX_VALIDATORS_TO_SLASH'])
                     slashed_validators = sample(
-                        epoch.validators, n_validators_to_slash)
+                        epoch.validators, slash_count)
                     for k in slashed_validators:
+                        slash_amount += agents[k].stake
                         agents[k].stake = 0.0
 
                 else:
@@ -367,11 +371,12 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                         # agents[p].stake -= params['BOND_SIZE'] * params['BOND_SLASH_PERCENT']
                         pass
 
-                    n_validators_to_slash = int(
+                    slash_count = int(
                         random() * params['MAX_VALIDATORS_TO_SLASH'])
                     slashed_validators = sample(
-                        epoch.validators, n_validators_to_slash)
+                        epoch.validators, slash_count)
                     for k in slashed_validators:
+                        slash_amount += agents[k].stake
                         agents[k].stake = 0.0
 
     return {'last_epoch': epoch,
@@ -383,7 +388,9 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
             'cumm_finalized_epochs': delta_finalized_epochs,
             'cumm_mana_used_on_finalized_blocks': delta_cumm_mana,
             'cumm_finalized_blocks': delta_finalized_blocks,
-            'agents': agents
+            'agents': agents,
+            'slash_count': slash_count,
+            'slash_amount': slash_amount
             }
 
 
@@ -474,7 +481,7 @@ def p_oracle_proving_cost(params: ModelParams, _2, _3, state: ModelState) -> dic
         MANA_PER_TX = params['RELATIVE_TARGET_MANA_PER_BLOCK'] * \
             params['MAXIMUM_MANA_PER_BLOCK'] / \
             params['AVERAGE_TX_COUNT_PER_SLOT']
-        GWEI_PER_USD = (10 ** 18) / params['market_price_eth']
+        GWEI_PER_USD = (10 ** 9) / params['market_price_eth']
         PROOF_COST_IN_GWEI_PER_MANA = params['PROVING_COST_INITIAL_IN_USD_PER_TX_C'] * \
             GWEI_PER_USD / MANA_PER_TX
     else:

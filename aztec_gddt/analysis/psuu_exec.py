@@ -30,6 +30,7 @@ logger = logging.getLogger('aztec-gddt-v2')
 CLOUD_BUCKET_NAME = 'aztec-gddt-v2-sim'
 CLOUD_PROJECT = 'aztec-bsci'
 
+
 def psuu(
     exp_spec: ExperimentParamSpec,
     SWEEPS_PER_PROCESS: int = -1,
@@ -85,7 +86,8 @@ def psuu(
           'PROVING_COST_MODIFICATION_E',
             'FEE_JUICE_PRICE_MODIFICATION_E',
             'RELATIVE_TARGET_MANA_PER_BLOCK',
-            'MAXIMUM_MANA_PER_BLOCK']
+            'MAXIMUM_MANA_PER_BLOCK',
+            'market_price_eth']
     }
 
     sweep_combinations = len(sweep_params['label'])
@@ -127,7 +129,8 @@ def psuu(
         if SWEEPS_PER_PROCESS > 0:
             sweeps_per_process = SWEEPS_PER_PROCESS
         else:
-            sweeps_per_process = max(min(int(traj_combinations / PROCESSES), 30), 1)
+            sweeps_per_process = max(
+                min(int(traj_combinations / PROCESSES), 30), 1)
         processes = PROCESSES
 
         chunk_size = sweeps_per_process
@@ -148,11 +151,12 @@ def psuu(
         if UPLOAD:
             storage_client = storage.Client(project=CLOUD_PROJECT)
             bucket = storage_client.bucket(CLOUD_BUCKET_NAME)
-            blob = bucket.blob(str(base_folder / "spec.json")) # type: ignore
-            blob.upload_from_filename(output_folder_path / "spec.json") # type: ignore
+            blob = bucket.blob(str(base_folder / "spec.json"))  # type: ignore
+            blob.upload_from_filename(
+                output_folder_path / "spec.json")  # type: ignore
 
         def run_chunk(i_chunk, sweep_params, pickle_file=True, upload=UPLOAD, post_process=True):
-            #logger.debug(f"{i_chunk}, {datetime.now()}")
+            # logger.debug(f"{i_chunk}, {datetime.now()}")
             sim_args = (
                 DEFAULT_INITIAL_STATE,
                 sweep_params,
@@ -180,25 +184,26 @@ def psuu(
                 storage_client = storage.Client(project=CLOUD_PROJECT)
                 bucket = storage_client.bucket(CLOUD_BUCKET_NAME)
                 blob = bucket.blob(str(base_folder /
-                                   f"timestep_tensor-{i_chunk}.pkl.gz")) # type: ignore
-                blob.upload_from_filename(str(output_filename)) # type: ignore
+                                   f"timestep_tensor-{i_chunk}.pkl.gz"))  # type: ignore
+                blob.upload_from_filename(str(output_filename))  # type: ignore
                 os.remove(str(output_filename))
 
             if post_process:
                 agg_df, c_agg_df = retrieve_feature_df(
-                    sim_df, 
-                    list(exp_spec.params_swept_control.keys()), 
+                    sim_df,
+                    list(exp_spec.params_swept_control.keys()),
                     exp_spec.relevant_per_trajectory_group_metrics)
 
                 agg_output_filename = output_folder_path / \
                     f"trajectory_tensor-{i_chunk}.pkl.gz"
-                
-                
+
                 if pickle_file:
                     agg_df.to_pickle(agg_output_filename)
                     if upload:
-                        blob = bucket.blob(str(base_folder / f"trajectory_tensor-{i_chunk}.pkl.gz")) # type: ignore
-                        blob.upload_from_filename(str(agg_output_filename)) # type: ignore
+                        blob = bucket.blob(
+                            str(base_folder / f"trajectory_tensor-{i_chunk}.pkl.gz"))  # type: ignore
+                        blob.upload_from_filename(
+                            str(agg_output_filename))  # type: ignore
         args = enumerate(split_dicts)
         if use_joblib:
             Parallel(n_jobs=processes)(
@@ -228,18 +233,25 @@ def psuu(
         pass
 
     if use_joblib:
-        files = glob(str(output_folder_path / f"trajectory_tensor-*.pkl.gz")) # type: ignore
+        # type: ignore
+        files = glob(str(output_folder_path / f"trajectory_tensor-*.pkl.gz"))
         dfs = []
         for file in files:
             dfs.append(pd.read_pickle(file).reset_index())
         agg_df = pd.concat(dfs)
-        agg_df.to_csv(str(output_folder_path / f"trajectory_tensor.csv.gz")) # type: ignore
-        agg_df.to_pickle(str(output_folder_path / f"trajectory_tensor.pkl.gz")) # type: ignore
+        # type: ignore
+        agg_df.to_csv(str(output_folder_path / f"trajectory_tensor.csv.gz"))
+        # type: ignore
+        agg_df.to_pickle(str(output_folder_path / f"trajectory_tensor.pkl.gz"))
         if UPLOAD:
             storage_client = storage.Client(project=CLOUD_PROJECT)
             bucket = storage_client.bucket(CLOUD_BUCKET_NAME)
-            blob = bucket.blob(str(base_folder / f"trajectory_tensor.csv.gz")) # type: ignore
-            blob.upload_from_filename(str(output_folder_path / f"trajectory_tensor.csv.gz")) # type: ignore
-            blob = bucket.blob(str(base_folder / f"trajectory_tensor.pkl.gz")) # type: ignore
-            blob.upload_from_filename(str(output_folder_path / f"trajectory_tensor.pkl.gz")) # type: ignore
+            blob = bucket.blob(
+                str(base_folder / f"trajectory_tensor.csv.gz"))  # type: ignore
+            blob.upload_from_filename(
+                str(output_folder_path / f"trajectory_tensor.csv.gz"))  # type: ignore
+            blob = bucket.blob(
+                str(base_folder / f"trajectory_tensor.pkl.gz"))  # type: ignore
+            blob.upload_from_filename(
+                str(output_folder_path / f"trajectory_tensor.pkl.gz"))  # type: ignore
     return None

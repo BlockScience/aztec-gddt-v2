@@ -101,7 +101,9 @@ RAW_MODEL_BLOCKS: list[dict] = [
             'cumm_finalized_epochs': add_suf,
             'cumm_mana_used_on_finalized_blocks': add_suf,
             'cumm_finalized_blocks': add_suf,
-            'agents': replace_suf
+            'agents': replace_suf,
+            'slash_count': replace_suf,
+            'slash_amount': replace_suf
         }
     }
 ]

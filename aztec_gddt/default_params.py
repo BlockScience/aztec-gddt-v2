@@ -74,7 +74,9 @@ DEFAULT_INITIAL_STATE = ModelState(
     cumm_mana_used_on_finalized_blocks=0,
     cumm_finalized_blocks=0,
     cumm_blocks_with_collected_signatures=0,
-    cumm_blocks_with_enough_signatures=0
+    cumm_blocks_with_enough_signatures=0,
+    slash_count=0,
+    slash_amount=0.0
 )
 
 DEFAULT_PARAMS = ModelParams(label='default',
@@ -99,7 +101,7 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              L1_GAS_TO_PUBLISH=150_000,  # fixeds
                              L1_BLOBGAS_PER_BLOB=int(2 ** 17),  # fixed, ~131k
                              POINT_EVALUATION_PRECOMIPLE_GAS=50_000,  # fixed
-                             MINIMUM_MULTIPLIER_CONGESTION=4_000_000,  # sweep
+                             MINIMUM_MULTIPLIER_CONGESTION=1_000_000,  # sweep
                              MAXIMUM_MULTIPLIER_CONGESTION_RATIO=10, # XXX, roughly equivalent to a max increase of 22026x
                              RELATIVE_UPDATE_FRACTION_CONGESTION=0.5,  # sweep
                              MAX_RELATIVE_CHANGE_CONGESTION=0.03,  # TODO
@@ -125,7 +127,7 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              PROVING_COST_MODIFICATION_E=0.0,
                              FEE_JUICE_PRICE_MODIFICATION_E=0.0,
                              ORACLE_UPDATE_FREQUENCY_E=0.5,
-                             JUICE_PER_GWEI_MEAN=1.1e-15,
+                             JUICE_PER_GWEI_MEAN=1.1e-6,
                              JUICE_PER_GWEI_COV=0.10,
                              INITIAL_INFLATION_ESTIMATE=0.0,
                              MAX_FEE_INFLATION_RELATIVE_MEAN=1.0,
