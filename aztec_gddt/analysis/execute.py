@@ -28,11 +28,11 @@ class ExecutionTime():
         return this.after_proc - this.before_run
 
 
-def execute_sim(exp_spec: ExperimentParamSpec, alternate=True, return_sim_df=False) -> tuple[pd.DataFrame, ExecutionTime]:
+def execute_sim(exp_spec: ExperimentParamSpec, alternate=True, return_sim_df=False, upload=True, parallelize=True) -> tuple[pd.DataFrame, ExecutionTime]:
 
     if alternate:
         from aztec_gddt.analysis.psuu_exec import psuu
-        sim_df = psuu(exp_spec, RETURN_SIM_DF=return_sim_df)
+        sim_df = psuu(exp_spec, RETURN_SIM_DF=return_sim_df, UPLOAD=upload, PARALLELIZE=parallelize)
         exec_time = time()
         return sim_df, exec_time # type: ignore
     else:

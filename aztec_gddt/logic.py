@@ -92,10 +92,11 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
                 max_fee: JuicePerMana = (
                     1 + inflation_estimate) * past_base_fee
 
-                max_fee_avg = (
-                    1 + inflation_estimate * params['MAX_FEE_INFLATION_RELATIVE_MEAN']) * past_base_fee
+                max_fee_avg = max((
+                    1 + inflation_estimate * params['MAX_FEE_INFLATION_RELATIVE_MEAN']) * past_base_fee, 0.0)
 
-                max_fee_std = params['MAX_FEE_INFLATION_RELATIVE_STD'] * max_fee
+                max_fee_std = max(
+                    params['MAX_FEE_INFLATION_RELATIVE_STD'] * max_fee, 0.0)
 
                 max_fees: npt.ArrayLike = st.norm.rvs(loc=max_fee_avg,
                                                       scale=max_fee_std,
@@ -115,16 +116,19 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
                     passively_excl_inds | actively_excl_inds)
 
                 expected_excl_tx = np.sum(passively_excl_inds)
-                expected_dropped_tx = np.sum(actively_excl_inds)  # type: ignore
+                expected_dropped_tx = np.sum(
+                    actively_excl_inds)  # type: ignore
 
-                expected_incl_tx = (expected_total_tx - expected_excl_tx - expected_dropped_tx)
+                expected_incl_tx = (expected_total_tx -
+                                    expected_excl_tx - expected_dropped_tx)
 
                 expected_block_mana = (expected_incl_tx
-                                        * params['OVERHEAD_MANA_PER_TX']
-                                          * params['TOTAL_MANA_MULTIPLIER_E'])
+                                       * params['OVERHEAD_MANA_PER_TX']
+                                       * params['TOTAL_MANA_MULTIPLIER_E'])
 
                 # XXX
-                expected_block_fees = max_fees[valid_inds].sum() # type: ignore
+                # type: ignore
+                expected_block_fees = max_fees[valid_inds].sum()
                 if expected_block_mana <= params['MAXIMUM_MANA_PER_BLOCK']:
                     curr_slot.has_proposal_on_network = True
                     curr_slot.tx_total_mana = expected_block_mana
@@ -135,11 +139,13 @@ def p_epoch(params: ModelParams, _2, history: list[list[ModelState]], state: Mod
                 else:
                     curr_slot.has_proposal_on_network = True
                     curr_slot.tx_total_mana = params['MAXIMUM_MANA_PER_BLOCK']
-                    curr_slot.tx_total_fee = expected_block_fees * params['MAXIMUM_MANA_PER_BLOCK'] / expected_block_mana
+                    curr_slot.tx_total_fee = expected_block_fees * \
+                        params['MAXIMUM_MANA_PER_BLOCK'] / expected_block_mana
                     excl_tx = expected_excl_tx
-                    total_tx = int(expected_incl_tx * params['MAXIMUM_MANA_PER_BLOCK'] / expected_block_mana)
+                    total_tx = int(
+                        expected_incl_tx * params['MAXIMUM_MANA_PER_BLOCK'] / expected_block_mana)
                     dropped_tx = expected_total_tx - (total_tx + excl_tx)
-                
+
                 curr_slot.tx_count = total_tx
     else:
         # If slot time has expired
@@ -326,7 +332,7 @@ def p_pending_epoch_proof(params: ModelParams, _2, _3,
                            ) / params['PROVER_QUOTE_RANGE'],
                         loc=params['PROVER_QUOTE_LOWER_BOUND'],
                         scale=params['PROVER_QUOTE_RANGE'])
-                    epoch.prover_quotes[prover_uuid] = quote # type: ignore
+                    epoch.prover_quotes[prover_uuid] = quote  # type: ignore
                 else:
                     # If time for acceptance is over, then
                     if len(epoch.prover_quotes) > 0:
@@ -520,7 +526,7 @@ def generic_gaussian_noise(var,
                            min_value=0.0,
                            max_rel_change=float('nan'),
                            modification_key=None):
-    def s_random_walk(params, _2, _3, state: dict, signal) -> tuple:
+    def s_random_walk(params: ModelParams, _2, _3, state: ModelState, signal) -> tuple:
 
         if state['timestep'] <= 1:
             raw_value = params[mu_param]
@@ -554,13 +560,33 @@ def generic_gaussian_noise(var,
     return s_random_walk
 
 
-s_market_price_juice_per_gwei = generic_gaussian_noise(
-    var='market_price_juice_per_gwei',
-    mu_param='JUICE_PER_GWEI_MEAN',
-    cov_param='JUICE_PER_GWEI_COV',
-    do_round=False,
-    min_value=0.0,
-    modification_key='FEE_JUICE_PRICE_MODIFICATION_E')
+def s_market_price_juice_per_gwei(params: ModelParams, _2, _3, state: ModelState, signal) -> tuple:
+    if (params['JUICE_PER_GWEI_SCENARIO'] == JuiceGweiExchangeRateScenario.Stochastic):
+        (_, value) = generic_gaussian_noise(
+            var='market_price_juice_per_gwei',
+            mu_param='JUICE_PER_GWEI_MEAN',
+            cov_param='JUICE_PER_GWEI_COV',
+            do_round=False,
+            min_value=0.0,
+            modification_key='FEE_JUICE_PRICE_MODIFICATION_E')(params, _2, _3, state, signal)
+    elif params['JUICE_PER_GWEI_SCENARIO'] == JuiceGweiExchangeRateScenario.Constant:
+        value = params['JUICE_PER_GWEI_MEAN']
+    else:
+        dy = params['JUICE_PER_GWEI_COV']
+        dy *= params['JUICE_PER_GWEI_MEAN']
+        dy /= 0.28867802136059275
+        max_y = params['JUICE_PER_GWEI_MEAN'] + dy / 2
+        min_y = params['JUICE_PER_GWEI_MEAN'] - dy / 2
+        dy_per_ts = dy / params['N_timesteps']
+        if params['JUICE_PER_GWEI_SCENARIO'] == JuiceGweiExchangeRateScenario.StrictlyIncreasing:
+            value = min_y + dy_per_ts * state['timestep']
+        elif params['JUICE_PER_GWEI_SCENARIO'] == JuiceGweiExchangeRateScenario.StrictlyDecreasing:
+            value = max_y - dy_per_ts * state['timestep']
+        else:
+            value = float('nan')
+
+    return ('market_price_juice_per_gwei', value)
+
 
 s_market_price_l1_gas = generic_gaussian_noise(
     'market_price_l1_gas', 'GWEI_PER_L1GAS_MEAN', 'GWEI_PER_L1GAS_COV', True, min_value=1.0, max_rel_change=0.125)

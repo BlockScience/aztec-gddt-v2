@@ -70,6 +70,7 @@ class ExperimentParamSpec():
 
     def prepare(self=1) -> ExperimentWrapper:
         default_params = {k: [v] for k, v in DEFAULT_PARAMS.items()}
+        default_params['N_timesteps'] = [self.N_timesteps] # XXX
 
         params_to_sweep = {**default_params, **
                            self.params_swept_env, **self.params_swept_control}

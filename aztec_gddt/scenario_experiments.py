@@ -57,7 +57,7 @@ experiment_feemech_l2_cost_censorship = ExperimentParamSpec(
     },
     params_swept_env={
         'MAX_FEE_INFLATION_RELATIVE_MEAN': [0.5, 1.0, 1.5],
-        'MAX_FEE_INFLATION_RELATIVE_STD': [0.02, 0.10, 0.50]
+        'MAX_FEE_INFLATION_RELATIVE_STD': [0.02, 0.10, 0.50],
     },
     N_timesteps=3_000,
     N_samples=3,

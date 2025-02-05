@@ -1,6 +1,13 @@
 from typing import Annotated, TypedDict, Union, Optional
 from dataclasses import dataclass, field
+from enum import Enum, auto
 
+
+class JuiceGweiExchangeRateScenario(Enum):
+    StrictlyIncreasing = auto()
+    StrictlyDecreasing = auto()
+    Constant = auto()
+    Stochastic = auto()
 
 Days = Annotated[float, 'days']  # Number of days
 BlocksL1 = int
@@ -128,6 +135,7 @@ class ModelState(TypedDict):
 class ModelParams(TypedDict):
     label: str
     timestep_in_l1_blocks: int
+    N_timesteps: int
 
     ### General ###
     OVERHEAD_MANA_PER_TX: Mana  # sweep 1k, 10k, 20k or 50k
@@ -189,6 +197,8 @@ class ModelParams(TypedDict):
     PROVER_QUOTE_LOWER_BOUND: Percentage
     PROVER_QUOTE_RANGE:Percentage
     PROVER_QUOTE_MODE: Percentage
+
+    JUICE_PER_GWEI_SCENARIO: JuiceGweiExchangeRateScenario
 
     # Exogenous
     market_price_eth: USDPerETH
