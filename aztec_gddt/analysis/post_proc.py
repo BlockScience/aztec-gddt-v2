@@ -4,7 +4,7 @@ import numpy as np
 def value_at_risk_in_usd(row, q):
     active_stakes_in_epoch = np.array(sorted(row['agents'][a].stake for a in row.current_epoch.validators))
 
-    if len(active_stakes_in_epoch) > 0:
+    if len(active_stakes_in_epoch) > 0 and (row['market_price_juice_per_gwei'] > 0):
         value_at_risk_in_juice = active_stakes_in_epoch[active_stakes_in_epoch <= np.quantile(active_stakes_in_epoch, q)].sum()
         value_at_risk_in_gwei = value_at_risk_in_juice / row['market_price_juice_per_gwei']
         value_at_risk_in_eth = value_at_risk_in_gwei / 1e9
