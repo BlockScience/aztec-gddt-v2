@@ -37,7 +37,7 @@ def psuu(
     PARALLELIZE: bool = True,
     USE_JOBLIB: bool = True,
     RETURN_SIM_DF: bool = False,
-    UPLOAD_TO_S3: bool = True,
+    UPLOAD: bool = True,
     ignore_warnings: bool = True
 ):
     """Function which runs the cadCAD simulations
@@ -121,6 +121,8 @@ def psuu(
             deepcopy_off=True,
             supress_print=True
         )
+
+        sim_df = post_process_sim_df(sim_df)
     else:
         if SWEEPS_PER_PROCESS > 0:
             sweeps_per_process = SWEEPS_PER_PROCESS
@@ -143,13 +145,13 @@ def psuu(
         with open(output_folder_path / "spec.json", "w") as fid:
             fid.write(exp_spec.to_json())
         output_path = str(output_folder_path / "timestep_tensor")
-        if UPLOAD_TO_S3:
+        if UPLOAD:
             storage_client = storage.Client(project=CLOUD_PROJECT)
             bucket = storage_client.bucket(CLOUD_BUCKET_NAME)
             blob = bucket.blob(str(base_folder / "spec.json")) # type: ignore
             blob.upload_from_filename(output_folder_path / "spec.json") # type: ignore
 
-        def run_chunk(i_chunk, sweep_params, pickle_file=True, upload_to_s3=UPLOAD_TO_S3, post_process=True):
+        def run_chunk(i_chunk, sweep_params, pickle_file=True, upload=UPLOAD, post_process=True):
             #logger.debug(f"{i_chunk}, {datetime.now()}")
             sim_args = (
                 DEFAULT_INITIAL_STATE,
@@ -172,9 +174,9 @@ def psuu(
             sim_df = post_process_sim_df(sim_df)
             output_filename = output_path + f"-{i_chunk}.pkl.gz"
 
-            if pickle_file or upload_to_s3:
+            if pickle_file or upload:
                 sim_df.to_pickle(output_filename)
-            if upload_to_s3:
+            if upload:
                 storage_client = storage.Client(project=CLOUD_PROJECT)
                 bucket = storage_client.bucket(CLOUD_BUCKET_NAME)
                 blob = bucket.blob(str(base_folder /
@@ -183,7 +185,6 @@ def psuu(
                 os.remove(str(output_filename))
 
             if post_process:
-
                 agg_df, c_agg_df = retrieve_feature_df(
                     sim_df, 
                     list(exp_spec.params_swept_control.keys()), 
@@ -195,7 +196,7 @@ def psuu(
                 
                 if pickle_file:
                     agg_df.to_pickle(agg_output_filename)
-                    if upload_to_s3:
+                    if upload:
                         blob = bucket.blob(str(base_folder / f"trajectory_tensor-{i_chunk}.pkl.gz")) # type: ignore
                         blob.upload_from_filename(str(agg_output_filename)) # type: ignore
         args = enumerate(split_dicts)
@@ -209,6 +210,7 @@ def psuu(
                 run_chunk(i_chunk, sweep_params)
 
         if RETURN_SIM_DF:
+            print(output_path)
             sim_df = pd.concat(
                 [pd.read_pickle(part, compression="gzip")
                  for part in glob(output_path+"*")]
@@ -233,7 +235,7 @@ def psuu(
         agg_df = pd.concat(dfs)
         agg_df.to_csv(str(output_folder_path / f"trajectory_tensor.csv.gz")) # type: ignore
         agg_df.to_pickle(str(output_folder_path / f"trajectory_tensor.pkl.gz")) # type: ignore
-        if UPLOAD_TO_S3:
+        if UPLOAD:
             storage_client = storage.Client(project=CLOUD_PROJECT)
             bucket = storage_client.bucket(CLOUD_BUCKET_NAME)
             blob = bucket.blob(str(base_folder / f"trajectory_tensor.csv.gz")) # type: ignore

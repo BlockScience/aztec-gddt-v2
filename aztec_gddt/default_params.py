@@ -1,7 +1,7 @@
 from aztec_gddt.types import *
 from random import random
 
-
+DEFAULT_N_TIMESTEPS = 1_000
 DEFAULT_BOND_SIZE: Juice = 1
 
 N_AGENTS = 512
@@ -79,6 +79,7 @@ DEFAULT_INITIAL_STATE = ModelState(
 
 DEFAULT_PARAMS = ModelParams(label='default',
                              timestep_in_l1_blocks=1,
+                             N_timesteps=DEFAULT_N_TIMESTEPS,
 
                              ### General ###
                              OVERHEAD_MANA_PER_TX=45_000,
@@ -142,6 +143,8 @@ DEFAULT_PARAMS = ModelParams(label='default',
                              PROVER_QUOTE_LOWER_BOUND=0.1,
                              PROVER_QUOTE_RANGE=0.8,
                              PROVER_QUOTE_MODE=0.3,
+
+                             JUICE_PER_GWEI_SCENARIO=JuiceGweiExchangeRateScenario.Stochastic,
 
                              # Exogenous
                              market_price_eth=3300,
