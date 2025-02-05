@@ -50,7 +50,7 @@ def psuu(
         warnings.filterwarnings('ignore')
 
     invoke_time = datetime.now()
-    logger.info(f"{{exp_spec.label}} Run invoked at {invoke_time}")
+    logger.info(f"{exp_spec.label} Run invoked at {invoke_time}")
 
     TIMESTEPS = exp_spec.N_timesteps
 

@@ -4,6 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 
 def fit_predict(X: pd.DataFrame,
       y: pd.Series,
@@ -122,9 +123,11 @@ def plot_inspect_vars(sim_df):
 
     cols_10 = ['slash_amount'] # Juice
 
+    cols_11 = ['value_at_risk_in_usd_q33', 'value_at_risk_in_usd_q50', 'value_at_risk_in_usd_q66'] # USD
+
 
     N_subsets = 5
-    N_cols = 10
+    N_cols = 11
     size_per_col = 6
     size_per_row = 3
 
@@ -227,6 +230,16 @@ def plot_inspect_vars(sim_df):
         ax.grid()
         # ax.set_yscale('log')
         ax.set_ylabel('Juice')
+        if i < N_subsets - 1:
+         ax.get_legend().remove()
+
+
+        ax = axes[i][10]
+        melted_df = traj_df.reset_index().melt(id_vars=[X_COL], value_vars=cols_11)
+        sns.lineplot(melted_df, x=X_COL, y='value', hue='variable', ax=ax)
+        ax.grid()
+        ax.set_yscale('log')
+        ax.set_ylabel('USD')
         if i < N_subsets - 1:
          ax.get_legend().remove()
     plt.show()
