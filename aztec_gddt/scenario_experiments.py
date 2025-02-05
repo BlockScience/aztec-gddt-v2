@@ -1,6 +1,6 @@
 from aztec_gddt.helper_types import ExperimentParamSpec
 from aztec_gddt.analysis.metrics import PER_TRAJECTORY_GROUP_METRICS_LABELS, PER_TRAJECTORY_METRICS_LABELS
-
+from aztec_gddt.types import *
 ### Classes ###
 
 # Scenario Specs
@@ -36,7 +36,8 @@ experiment_feemech_volatility = ExperimentParamSpec(
     },
     params_swept_env={
         'JUICE_PER_GWEI_MEAN': [1.1e-15, 10e-15],
-        'JUICE_PER_GWEI_COV': [0.03, 0.30]
+        'JUICE_PER_GWEI_COV': [0.03, 0.30],
+        'JUICE_PER_GWEI_SCENARIO': [JuiceGweiExchangeRateScenario.Stochastic, JuiceGweiExchangeRateScenario.StrictlyIncreasing, JuiceGweiExchangeRateScenario.StrictlyDecreasing, JuiceGweiExchangeRateScenario.Constant]
     },
     N_timesteps=3_000,
     N_samples=5,
@@ -58,6 +59,7 @@ experiment_feemech_l2_cost_censorship = ExperimentParamSpec(
     params_swept_env={
         'MAX_FEE_INFLATION_RELATIVE_MEAN': [0.5, 1.0, 1.5],
         'MAX_FEE_INFLATION_RELATIVE_STD': [0.02, 0.10, 0.50],
+        'JUICE_PER_GWEI_SCENARIO': [JuiceGweiExchangeRateScenario.Stochastic, JuiceGweiExchangeRateScenario.StrictlyIncreasing, JuiceGweiExchangeRateScenario.StrictlyDecreasing, JuiceGweiExchangeRateScenario.Constant]
     },
     N_timesteps=3_000,
     N_samples=3,
@@ -79,7 +81,8 @@ experiment_feemech_shock_analysis = ExperimentParamSpec(
     },
     params_swept_env={
         'GWEI_PER_L1GAS_MEAN': [30, 100],
-        'AVERAGE_TX_COUNT_PER_SLOT': [360, 1080]
+        'AVERAGE_TX_COUNT_PER_SLOT': [360, 1080],
+        'JUICE_PER_GWEI_SCENARIO': [JuiceGweiExchangeRateScenario.Stochastic, JuiceGweiExchangeRateScenario.StrictlyIncreasing, JuiceGweiExchangeRateScenario.StrictlyDecreasing, JuiceGweiExchangeRateScenario.Constant]
     },
     N_timesteps=3_000,
     N_samples=5,
