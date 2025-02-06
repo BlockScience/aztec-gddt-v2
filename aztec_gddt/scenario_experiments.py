@@ -98,7 +98,7 @@ experiment_feemech_oracle_sensitivity = ExperimentParamSpec(
         'MAXIMUM_UPDATE_PERCENTAGE_C': [0.01, 0.03],
     },
     params_swept_env={
-        'ORACLE_UPDATE_PRICE_FREQUENCY': [0.05, 0.95],
+        'ORACLE_UPDATE_FREQUENCY_E': [0.05, 0.95],
         'PROVING_COST_MODIFICATION_E': [-0.001, 0.0, 0.001],  # TODO
         'FEE_JUICE_PRICE_MODIFICATION_E': [-0.001, 0.0, 0.001],  # TODO
     },
