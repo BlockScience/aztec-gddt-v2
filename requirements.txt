@@ -1,0 +1,12 @@
+cadCAD==0.5.3  
+click==8.1.8  
+dataclasses-json==0.6.7  
+gcsfs==2025.2.0  
+joblib==1.4.2  
+matplotlib==3.10.1  
+numpy==2.2.3  
+pandas==2.2.3  
+plotly==6.0.0  
+scikit-learn==1.6.1  
+scipy==1.15.2  
+seaborn==0.13.2
